@@ -1,0 +1,53 @@
+{
+  "title": "DRG Payment Integrity Dashboard",
+  "subtitle": "Weekly Review - Operations Lead",
+  "dataFile": "data1.csv",
+  "columnMeta": {
+    "providertaxid": { "label": "Provider Tax ID", "type": "id", "format": "text", "hidden": false },
+    "claimnumber": { "label": "Claim Number", "type": "id", "format": "text", "hidden": false },
+    "firstdateofservice": { "label": "First Date of Service", "type": "date", "format": "date", "hidden": false },
+    "lastdateofservice": { "label": "Last Date of Service", "type": "date", "format": "date", "hidden": false },
+    "dischargestatuscode": { "label": "Discharge Status Code", "type": "dimension", "format": "text", "hidden": false },
+    "admitdiagnosiscode": { "label": "Admit Diagnosis Code", "type": "dimension", "format": "text", "hidden": false },
+    "primarydiagnosiscode": { "label": "Primary Diagnosis Code", "type": "dimension", "format": "text", "hidden": false },
+    "primaryprocedurecode": { "label": "Primary Procedure Code", "type": "dimension", "format": "text", "hidden": false },
+    "totalpaidamount": { "label": "Total Paid Amount", "type": "metric", "format": "currency", "hidden": false },
+    "lengthofstay": { "label": "Length of Stay", "type": "metric", "format": "number", "hidden": false },
+    "loadmonth": { "label": "Load Month", "type": "dimension", "format": "text", "hidden": false },
+    "category": { "label": "Category", "type": "dimension", "format": "text", "hidden": false },
+    "selectionreason": { "label": "Selection Reason", "type": "dimension", "format": "text", "hidden": false },
+    "subprogramtype": { "label": "Sub-Program Type", "type": "dimension", "format": "text", "hidden": false },
+    "exl_nofinding": { "label": "EXL No Finding", "type": "metric", "format": "number", "hidden": false },
+    "exl_finding": { "label": "EXL Finding", "type": "metric", "format": "number", "hidden": false },
+    "drgconditiontype": { "label": "DRG Condition Type", "type": "dimension", "format": "text", "hidden": false },
+    "mdcn": { "label": "MDCN", "type": "dimension", "format": "text", "hidden": false },
+    "mcc_count": { "label": "MCC Count", "type": "metric", "format": "number", "hidden": false },
+    "cc_count": { "label": "CC Count", "type": "metric", "format": "number", "hidden": false },
+    "selection_month": { "label": "Selection Month", "type": "dimension", "format": "text", "hidden": false }
+  },
+  "filterColumns": ["loadmonth", "category", "subprogramtype", "selectionreason", "drgconditiontype"],
+  "kpis": [
+    { "label": "Total Claims", "column": "claimnumber", "aggregation": "count", "format": "number" },
+    { "label": "Total Paid Amount", "column": "totalpaidamount", "aggregation": "sum", "format": "currency", "prefix": "$" },
+    { "label": "Avg Paid Amount", "column": "totalpaidamount", "aggregation": "avg", "format": "currency", "prefix": "$" },
+    { "label": "Avg LOS", "column": "lengthofstay", "aggregation": "avg", "format": "number", "suffix": " days" },
+    { "label": "Findings", "column": "exl_finding", "aggregation": "sum", "format": "number" },
+    { "label": "No Findings", "column": "exl_nofinding", "aggregation": "sum", "format": "number" },
+    { "label": "Unique Providers", "column": "providertaxid", "aggregation": "distinct_count", "format": "number" }
+  ],
+  "charts": [
+    { "id": "chart1", "type": "bar", "title": "Claims by Category", "xAxis": "category", "yAxis": "claimnumber", "aggregation": "count" },
+    { "id": "chart2", "type": "bar", "title": "Paid Amount by Sub-Program", "xAxis": "subprogramtype", "yAxis": "totalpaidamount", "aggregation": "sum" },
+    { "id": "chart3", "type": "doughnut", "title": "Selection Reason Mix", "xAxis": "selectionreason", "yAxis": "claimnumber", "aggregation": "count" },
+    { "id": "chart4", "type": "horizontalBar", "title": "Top Providers by Paid", "xAxis": "providertaxid", "yAxis": "totalpaidamount", "aggregation": "sum", "topN": 10 }
+  ],
+  "drillDownLevels": ["category", "subprogramtype", "selectionreason", "drgconditiontype", "primaryprocedurecode"],
+  "tableMetrics": [
+    { "column": "claimnumber", "aggregation": "count", "label": "Claims", "format": "number" },
+    { "column": "totalpaidamount", "aggregation": "sum", "label": "Total Paid", "format": "currency" },
+    { "column": "totalpaidamount", "aggregation": "avg", "label": "Avg Paid", "format": "currency" },
+    { "column": "lengthofstay", "aggregation": "avg", "label": "Avg LOS", "format": "number" },
+    { "column": "exl_finding", "aggregation": "sum", "label": "Findings", "format": "number" },
+    { "column": "exl_nofinding", "aggregation": "sum", "label": "No Findings", "format": "number" }
+  ]
+}

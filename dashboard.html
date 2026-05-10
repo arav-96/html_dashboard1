@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRG Payment Integrity Dashboard</title>
+    
+    <!-- External CDN Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0f1419;
+            --bg-darker: #090c0f;
+            --bg-card: #1a1f27;
+            --bg-hover: #252d37;
+            --text-primary: #e4e6eb;
+            --text-secondary: #8a8d91;
+            --accent-color: #00AEEF;
+            --accent-light: #33c3ff;
+            --border-color: #2d3339;
+            --success-color: #31a24c;
+            --warning-color: #ff9500;
+            --danger-color: #dc3545;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ========== ERROR BANNER ========== */
+        .error-banner {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 16px 20px;
+            margin: 0;
+            display: none;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .error-banner.show {
+            display: block;
+        }
+
+        .error-banner button {
+            background: white;
+            color: var(--danger-color);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        /* ========== TOP BAR ========== */
+        .top-bar {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .top-bar-left h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .top-bar-left p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .load-month-badge {
+            background-color: var(--accent-color);
+            color: var(--bg-dark);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ========== FILTER BAR ========== */
+        .filter-bar {
+            background-color: var(--bg-darker);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+        }
+
+        .filter-group label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .filter-group select {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .filter-group select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.1);
+        }
+
+        .reset-filters-btn {
+            background-color: var(--accent-color);
+            color: var(--bg-dark);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            align-self: flex-end;
+            margin-top: 20px;
+        }
+
+        .reset-filters-btn:hover {
+            background-color: var(--accent-light);
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 0;
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding: 16px;
+            gap: 16px;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-left: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .left-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                max-height: 50%;
+            }
+            .right-panel {
+                border-left: none;
+            }
+        }
+
+        /* ========== KPI CARDS ========== */
+        .kpi-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .kpi-card-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .kpi-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-color);
+            word-break: break-word;
+        }
+
+        /* ========== CHARTS CONTAINER ========== */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chart-wrapper {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .chart-wrapper h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .chart-canvas-wrapper {
+            flex: 1;
+            position: relative;
+            min-height: 250px;
+        }
+
+        /* ========== TABS ========== */
+        .tabs-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-card);
+            gap: 0;
+        }
+
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 12px 0;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-button.active {
+            color: var(--accent-color);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* ========== SUMMARY TAB ========== */
+        .summary-content {
+            overflow-y: auto;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .summary-content > .kpi-cards-container {
+            gap: 12px;
+        }
+
+        .summary-charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        /* ========== PIVOT TABLE ========== */
+        .pivot-content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .table-toolbar {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-btn:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-dark);
+            border-color: var(--accent-color);
+        }
+
+        .pivot-table-wrapper {
+            flex: 1;
+            overflow: auto;
+        }
+
+        .pivot-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .pivot-table thead {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-card);
+            z-index: 10;
+        }
+
+        .pivot-table th {
+            background-color: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .pivot-table th:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-dark);
+        }
+
+        .pivot-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            text-align: left;
+            color: var(--text-primary);
+        }
+
+        .pivot-table tbody tr:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .pivot-table tbody tr.expanded {
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .pivot-table tbody tr.totals-row {
+            background-color: var(--bg-hover);
+            font-weight: 600;
+            border-top: 2px solid var(--accent-color);
+        }
+
+        .pivot-table tbody tr.child-row {
+            background-color: rgba(0, 174, 239, 0.05);
+        }
+
+        .expand-arrow {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .expand-arrow.expanded {
+            transform: rotate(90deg);
+        }
+
+        /* ========== FLAT TABLE ========== */
+        .claim-detail-content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .flat-table-wrapper {
+            flex: 1;
+            overflow: auto;
+            margin-bottom: 12px;
+        }
+
+        .flat-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .flat-table thead {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-card);
+            z-index: 10;
+        }
+
+        .flat-table th {
+            background-color: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .flat-table th:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-dark);
+        }
+
+        .flat-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            text-align: left;
+            color: var(--text-primary);
+            word-break: break-word;
+            max-width: 300px;
+        }
+
+        .flat-table tbody tr:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background-color: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .pagination button {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--accent-color);
+            color: var(--bg-dark);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            padding: 6px 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .column-menu {
+            position: absolute;
+            right: 16px;
+            top: 96px;
+            z-index: 50;
+            width: min(360px, calc(100vw - 32px));
+            max-height: 52vh;
+            overflow: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .column-menu[hidden] {
+            display: none;
+        }
+
+        .column-menu label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* ========== SCROLLBAR ========== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-darker);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        /* ========== PRINT STYLESHEET ========== */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            .error-banner,
+            .filter-bar,
+            .table-toolbar,
+            .tab-nav,
+            .reset-filters-btn,
+            .pagination {
+                display: none;
+            }
+
+            .container {
+                height: auto;
+            }
+
+            .main-content {
+                flex-direction: column;
+                border: none;
+            }
+
+            .left-panel,
+            .right-panel {
+                border: none;
+                flex: none;
+                max-height: none;
+                overflow: visible;
+                padding: 20px;
+            }
+
+            .tab-content {
+                display: flex !important;
+                page-break-inside: avoid;
+            }
+
+            .chart-wrapper,
+            .kpi-card,
+            .pivot-table {
+                background-color: white;
+                color: black;
+                border: 1px solid #ccc;
+                page-break-inside: avoid;
+            }
+
+            .kpi-card-value {
+                color: #000;
+            }
+
+            canvas {
+                max-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Error Banner -->
+        <div class="error-banner" id="errorBanner"></div>
+
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <h1 id="dashboardTitle">DRG Payment Integrity Dashboard</h1>
+                <p id="dashboardSubtitle">Weekly Review - Operations Lead</p>
+            </div>
+            <div class="load-month-badge" id="loadMonthBadge">Loading...</div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar" id="filterBar"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: KPIs & Charts -->
+            <div class="left-panel">
+                <div class="kpi-cards-container" id="kpiContainer"></div>
+                <div class="charts-container" id="chartsContainer"></div>
+            </div>
+
+            <!-- Right Panel: Tabs -->
+            <div class="right-panel">
+                <div class="tabs-container">
+                    <div class="tab-nav">
+                        <button class="tab-button active" data-tab="summary">Summary</button>
+                        <button class="tab-button" data-tab="pivot">Pivot View</button>
+                        <button class="tab-button" data-tab="detail">Claim Detail</button>
+                    </div>
+
+                    <!-- Summary Tab -->
+                    <div class="tab-content active" id="summary-tab">
+                        <div class="summary-content">
+                            <div class="kpi-cards-container" id="summaryKpiContainer"></div>
+                            <div class="summary-charts" id="summarySummaryChartsContainer"></div>
+                        </div>
+                    </div>
+
+                    <!-- Pivot Tab -->
+                    <div class="tab-content" id="pivot-tab">
+                        <div class="pivot-content">
+                            <div class="table-toolbar">
+                                <button class="toolbar-btn" id="exportCsvBtn">Export CSV</button>
+                                <button class="toolbar-btn" id="exportPngBtn">Export PNG</button>
+                                <button class="toolbar-btn" id="printBtn">Print View</button>
+                            </div>
+                            <div class="pivot-table-wrapper">
+                                <table class="pivot-table" id="pivotTable">
+                                    <thead></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Claim Detail Tab -->
+                    <div class="tab-content" id="detail-tab">
+                        <div class="claim-detail-content">
+                            <div class="table-toolbar">
+                                <button class="toolbar-btn" id="exportDetailCsvBtn">Export CSV</button>
+                                <button class="toolbar-btn" id="exportDetailPngBtn">Export PNG</button>
+                                <button class="toolbar-btn" id="detailPrintBtn">Print View</button>
+                                <button class="toolbar-btn" id="toggleDetailColsBtn">Column Visibility</button>
+                                <div class="column-menu" id="detailColumnMenu" hidden></div>
+                            </div>
+                            <div class="flat-table-wrapper">
+                                <table class="flat-table" id="claimDetailTable">
+                                    <thead></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="paginationContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== DEFAULT CONFIG (EMBEDDED) ==========
+        const DEFAULT_CONFIG = {
+            "title": "DRG Payment Integrity Dashboard",
+            "subtitle": "Weekly Review - Operations Lead",
+            "dataFile": "data1.csv",
+            "columnMeta": {
+                "providertaxid": {"label": "Provider Tax ID", "type": "id", "format": "text", "hidden": false},
+                "claimnumber": {"label": "Claim Number", "type": "id", "format": "text", "hidden": false},
+                "firstdateofservice": {"label": "First Date of Service", "type": "date", "format": "date", "hidden": false},
+                "lastdateofservice": {"label": "Last Date of Service", "type": "date", "format": "date", "hidden": false},
+                "dischargestatuscode": {"label": "Discharge Status Code", "type": "dimension", "format": "text", "hidden": false},
+                "admitdiagnosiscode": {"label": "Admit Diagnosis Code", "type": "dimension", "format": "text", "hidden": false},
+                "primarydiagnosiscode": {"label": "Primary Diagnosis Code", "type": "dimension", "format": "text", "hidden": false},
+                "primaryprocedurecode": {"label": "Primary Procedure Code", "type": "dimension", "format": "text", "hidden": false},
+                "totalpaidamount": {"label": "Total Paid Amount", "type": "metric", "format": "currency", "hidden": false},
+                "lengthofstay": {"label": "Length of Stay", "type": "metric", "format": "number", "hidden": false},
+                "loadmonth": {"label": "Load Month", "type": "date", "format": "text", "hidden": false},
+                "category": {"label": "Category", "type": "dimension", "format": "text", "hidden": false},
+                "selectionreason": {"label": "Selection Reason", "type": "dimension", "format": "text", "hidden": false},
+                "subprogramtype": {"label": "Sub-Program Type", "type": "dimension", "format": "text", "hidden": false},
+                "exl_nofinding": {"label": "Exclusion No Finding", "type": "metric", "format": "number", "hidden": false},
+                "exl_finding": {"label": "Exclusion Finding", "type": "metric", "format": "number", "hidden": false},
+                "drgconditiontype": {"label": "DRG Condition Type", "type": "dimension", "format": "text", "hidden": false},
+                "mdcn": {"label": "MDC Number", "type": "dimension", "format": "text", "hidden": false},
+                "mcc_count": {"label": "MCC Count", "type": "metric", "format": "number", "hidden": false},
+                "cc_count": {"label": "CC Count", "type": "metric", "format": "number", "hidden": false},
+                "selection_month": {"label": "Selection Month", "type": "date", "format": "text", "hidden": false}
+            },
+            "filterColumns": ["loadmonth", "category", "subprogramtype", "selectionreason", "drgconditiontype"],
+            "kpis": [
+                {"label": "Total Claims", "column": "claimnumber", "aggregation": "count", "format": "number"},
+                {"label": "Total Paid Amount", "column": "totalpaidamount", "aggregation": "sum", "format": "currency", "prefix": "$"},
+                {"label": "Avg Paid Amount", "column": "totalpaidamount", "aggregation": "avg", "format": "currency", "prefix": "$"},
+                {"label": "Avg LOS", "column": "lengthofstay", "aggregation": "avg", "format": "number", "suffix": " days"},
+                {"label": "Findings", "column": "exl_finding", "aggregation": "sum", "format": "number"},
+                {"label": "No Findings", "column": "exl_nofinding", "aggregation": "sum", "format": "number"},
+                {"label": "Unique Providers", "column": "providertaxid", "aggregation": "distinct_count", "format": "number"}
+            ],
+            "charts": [
+                {"id": "chart1", "type": "bar", "title": "Claims by Category", "xAxis": "category", "yAxis": "claimnumber", "aggregation": "count"},
+                {"id": "chart2", "type": "bar", "title": "Paid Amount by Sub-Program", "xAxis": "subprogramtype", "yAxis": "totalpaidamount", "aggregation": "sum"},
+                {"id": "chart3", "type": "doughnut", "title": "Selection Reason Mix", "xAxis": "selectionreason", "yAxis": "claimnumber", "aggregation": "count"},
+                {"id": "chart4", "type": "horizontalBar", "title": "Top Providers by Paid Amount", "xAxis": "providertaxid", "yAxis": "totalpaidamount", "aggregation": "sum", "topN": 10}
+            ],
+            "drillDownLevels": ["category", "subprogramtype", "selectionreason", "drgconditiontype", "primaryprocedurecode"],
+            "tableMetrics": [
+                {"column": "claimnumber", "aggregation": "count", "label": "Claims", "format": "number"},
+                {"column": "totalpaidamount", "aggregation": "sum", "label": "Total Paid", "format": "currency"},
+                {"column": "totalpaidamount", "aggregation": "avg", "label": "Avg Paid", "format": "currency"},
+                {"column": "lengthofstay", "aggregation": "avg", "label": "Avg LOS", "format": "number"},
+                {"column": "exl_finding", "aggregation": "sum", "label": "Findings", "format": "number"},
+                {"column": "exl_nofinding", "aggregation": "sum", "label": "No Findings", "format": "number"}
+            ]
+        };
+
+        // ========== STATE MANAGEMENT ==========
+        const state = {
+            config: null,
+            rawData: [],
+            filteredData: [],
+            filters: {},
+            charts: {},
+            currentPivotPage: 1,
+            sortColumn: null,
+            sortDirection: 'asc',
+            detailSortColumn: null,
+            detailSortDirection: 'asc',
+            expandedRows: new Set(),
+            hiddenColumns: new Set(),
+            hiddenDetailColumns: new Set()
+        };
+
+        // ========== UTILITY FUNCTIONS ==========
+        
+        function showError(message) {
+            const banner = document.getElementById('errorBanner');
+            banner.textContent = message;
+            banner.innerHTML += ' <button onclick="this.parentElement.classList.remove(\'show\')">Dismiss</button>';
+            banner.classList.add('show');
+        }
+
+        function formatValue(value, format, column = '') {
+            if (value === null || value === undefined || value === '') return '-';
+            
+            if (format === 'currency') {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            } else if (format === 'percent') {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'percent',
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1
+                }).format(value / 100);
+            } else if (format === 'number') {
+                return new Intl.NumberFormat('en-US').format(value);
+            } else if (format === 'date') {
+                try {
+                    return new Date(value).toLocaleDateString('en-US');
+                } catch {
+                    return value;
+                }
+            }
+            return value;
+        }
+
+        function aggregate(rows, column, aggregation) {
+            if (!rows || rows.length === 0) return 0;
+            switch (aggregation) {
+                case 'sum':
+                    return sumRows(rows, column);
+                case 'count':
+                    return countRows(rows, column);
+                case 'avg':
+                    return avgRows(rows, column);
+                case 'distinct_count':
+                    return distinctCountRows(rows, column);
+                default:
+                    return 0;
+            }
+        }
+
+        function sumRows(rows, columnName) {
+            return rows.reduce((total, row) => total + numericValue(row[columnName]), 0);
+        }
+
+        function countRows(rows, columnName) {
+            return rows.filter(row => row[columnName] !== null && row[columnName] !== undefined && String(row[columnName]) !== '').length;
+        }
+
+        function avgRows(rows, columnName) {
+            const values = rows
+                .map(row => row[columnName])
+                .filter(value => value !== null && value !== undefined && String(value) !== '')
+                .map(numericValue)
+                .filter(value => Number.isFinite(value));
+            return values.length ? values.reduce((total, value) => total + value, 0) / values.length : 0;
+        }
+
+        function distinctCountRows(rows, columnName) {
+            return new Set(rows.map(row => String(row[columnName] ?? '')).filter(Boolean)).size;
+        }
+
+        function numericValue(value) {
+            if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+            const parsed = Number(String(value ?? '').replace(/[$,%\s,]/g, ''));
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        function hasDataColumn(column) {
+            return !!state.rawData[0] && Object.prototype.hasOwnProperty.call(state.rawData[0], column);
+        }
+
+        function filterData() {
+            const filterEntries = Object.entries(state.filters).filter(([_, v]) => v !== '');
+            
+            state.filteredData = state.rawData.filter(row => {
+                return filterEntries.every(([col, val]) => {
+                    return String(row[col] || '') === String(val);
+                });
+            });
+
+            updateDashboard();
+            renderFilterBar();
+        }
+
+        // ========== CONFIG & DATA LOADING ==========
+        
+        async function loadConfig() {
+            console.log('Starting loadConfig...');
+            try {
+                const response = await fetch('config.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                state.config = await response.json();
+                console.log('Config loaded from config.json:', state.config);
+                initializeDashboard();
+            } catch (error) {
+                console.error('Failed to load config.json:', error);
+                showError(`Could not load config.json. Open this dashboard with load_data.bat so Chrome allows local file access. Details: ${error.message}`);
+            }
+        }
+
+        async function loadData() {
+            try {
+                const filePath = state.config.dataFile;
+                console.log('Loading data from:', filePath);
+                
+                let text;
+                try {
+                    // Try fetch first
+                    const response = await fetch(filePath);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    text = await response.text();
+                } catch (fetchError) {
+                    // Fallback to XMLHttpRequest for better local file support
+                    console.log('Fetch failed, trying XMLHttpRequest:', fetchError.message);
+                    text = await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', filePath, true);
+                        xhr.onload = () => {
+                            if (xhr.status === 0 || xhr.status === 200) {
+                                resolve(xhr.responseText);
+                            } else {
+                                reject(new Error(`XHR Status ${xhr.status}`));
+                            }
+                        };
+                        xhr.onerror = () => reject(new Error('XHR error loading file'));
+                        xhr.send();
+                    });
+                }
+                
+                const lowerFilePath = filePath.toLowerCase();
+                if (lowerFilePath.endsWith('.csv')) {
+                    const result = Papa.parse(text, { header: true, skipEmptyLines: true });
+                    if (result.errors && result.errors.length > 0) {
+                        console.warn('CSV parse warnings:', result.errors);
+                    }
+                    state.rawData = result.data.filter(row => Object.keys(row).some(key => row[key]));
+                } else if (lowerFilePath.endsWith('.xlsx') || lowerFilePath.endsWith('.xls')) {
+                    const arrayBuffer = await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', filePath, true);
+                        xhr.responseType = 'arraybuffer';
+                        xhr.onload = () => resolve(xhr.response);
+                        xhr.onerror = () => reject(new Error('Failed to load XLSX'));
+                        xhr.send();
+                    });
+                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    state.rawData = XLSX.utils.sheet_to_json(firstSheet);
+                } else {
+                    throw new Error('Unsupported file format. Use .csv or .xlsx');
+                }
+                
+                console.log(`Data loaded successfully: ${state.rawData.length} rows`);
+                console.log('First row sample:', state.rawData[0]);
+                const detectedColumns = Object.keys(state.rawData[0] || {});
+                Object.keys(state.config.columnMeta || {}).forEach(col => {
+                    if (!detectedColumns.includes(col)) console.warn(`Configured column missing from data file, skipping where needed: ${col}`);
+                });
+                
+                state.filteredData = [...state.rawData];
+                renderDashboard();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                showError(`Failed to load ${state.config.dataFile}: ${error.message}. Make sure the file exists in the same folder as dashboard.html.`);
+            }
+        }
+
+        function initializeDashboard() {
+            try {
+                console.log('Initializing dashboard with config:', state.config);
+                document.getElementById('dashboardTitle').textContent = state.config.title;
+                document.getElementById('dashboardSubtitle').textContent = state.config.subtitle;
+                
+                // Initialize filters
+                state.filters = {};
+                state.config.filterColumns.forEach(col => {
+                    state.filters[col] = '';
+                });
+                
+                console.log('Config initialized, loading data...');
+                loadData();
+            } catch (error) {
+                console.error('Error in initializeDashboard:', error);
+                showError(`Initialization error: ${error.message}`);
+            }
+        }
+
+        function renderDashboard() {
+            console.log('Rendering dashboard...');
+            try {
+                renderTopBar();
+                renderFilterBar();
+                renderKpiCards();
+                renderCharts();
+                renderPivotTable();
+                renderClaimDetailTable();
+                setupTabNavigation();
+                setupToolbarButtons();
+                console.log('Dashboard rendered successfully');
+            } catch (error) {
+                console.error('Error rendering dashboard:', error);
+                showError(`Error rendering dashboard: ${error.message}`);
+            }
+        }
+
+        function updateDashboard() {
+            try {
+                renderKpiCards();
+                renderCharts();
+                renderPivotTable();
+                renderClaimDetailTable();
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+            }
+        }
+
+        // ========== TOP BAR & FILTER BAR ==========
+        
+        function renderTopBar() {
+            const loadMonths = [...new Set(state.rawData.map(r => r.loadmonth))].sort().reverse();
+            const currentMonth = loadMonths[0] || '202506';
+            document.getElementById('loadMonthBadge').textContent = `Load Month: ${currentMonth}`;
+        }
+
+        function renderFilterBar() {
+            const filterBar = document.getElementById('filterBar');
+            filterBar.innerHTML = '';
+            
+            state.config.filterColumns.forEach(col => {
+                const colMeta = state.config.columnMeta[col];
+                if (!colMeta) {
+                    console.warn(`Column ${col} not found in columnMeta, skipping filter`);
+                    return;
+                }
+                
+                const rowsForOptions = state.rawData.filter(row => {
+                    return Object.entries(state.filters).every(([filterCol, filterVal]) => {
+                        return filterCol === col || filterVal === '' || String(row[filterCol] || '') === String(filterVal);
+                    });
+                });
+                const uniqueValues = [...new Set(rowsForOptions.map(r => r[col]))].filter(v => v !== null && v !== undefined && v !== '').sort();
+                
+                if (uniqueValues.length === 0) {
+                    console.warn(`No unique values found for filter column: ${col}`);
+                    return;
+                }
+                
+                const group = document.createElement('div');
+                group.className = 'filter-group';
+                
+                const label = document.createElement('label');
+                label.textContent = colMeta.label;
+                
+                const select = document.createElement('select');
+                select.name = col;
+                
+                const emptyOpt = document.createElement('option');
+                emptyOpt.value = '';
+                emptyOpt.textContent = `All ${colMeta.label}`;
+                select.appendChild(emptyOpt);
+                
+                uniqueValues.forEach(val => {
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = val;
+                    select.appendChild(opt);
+                });
+                
+                select.addEventListener('change', (e) => {
+                    state.filters[col] = e.target.value;
+                    filterData();
+                });
+                select.value = state.filters[col] || '';
+                
+                group.appendChild(label);
+                group.appendChild(select);
+                filterBar.appendChild(group);
+            });
+            
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'reset-filters-btn';
+            resetBtn.textContent = 'Reset Filters';
+            resetBtn.addEventListener('click', () => {
+                state.config.filterColumns.forEach(col => {
+                    state.filters[col] = '';
+                    const select = filterBar.querySelector(`select[name="${col}"]`);
+                    if (select) select.value = '';
+                });
+                filterData();
+            });
+            filterBar.appendChild(resetBtn);
+        }
+
+        // ========== KPI CARDS ==========
+        
+        function renderKpiCards() {
+            const container = document.getElementById('kpiContainer');
+            const summaryContainer = document.getElementById('summaryKpiContainer');
+            container.innerHTML = '';
+            summaryContainer.innerHTML = '';
+            
+            const html = state.config.kpis.filter(kpi => hasDataColumn(kpi.column)).map(kpi => {
+                try {
+                    const value = aggregate(state.filteredData, kpi.column, kpi.aggregation);
+                    const formatted = formatValue(value, kpi.format);
+                    const formatted_with_prefix = (kpi.prefix || '') + formatted + (kpi.suffix || '');
+                    
+                    return `
+                        <div class="kpi-card">
+                            <div class="kpi-card-label">${kpi.label}</div>
+                            <div class="kpi-card-value">${formatted_with_prefix}</div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error(`Error rendering KPI ${kpi.label}:`, error);
+                    return '';
+                }
+            }).join('');
+            
+            container.innerHTML = html;
+            summaryContainer.innerHTML = html;
+        }
+
+        // ========== CHARTS ==========
+        
+        function renderCharts() {
+            Object.values(state.charts).forEach(chart => chart?.destroy());
+            state.charts = {};
+            const container = document.getElementById('chartsContainer');
+            const summaryContainer = document.getElementById('summarySummaryChartsContainer');
+            container.innerHTML = '';
+            summaryContainer.innerHTML = '';
+            state.config.charts
+                .filter(chartConfig => hasDataColumn(chartConfig.xAxis) && hasDataColumn(chartConfig.yAxis))
+                .forEach(chartConfig => {
+                    container.appendChild(createChartWrapper(chartConfig, chartConfig.id));
+                    summaryContainer.appendChild(createChartWrapper(chartConfig, `summary-${chartConfig.id}`));
+                    createChart(chartConfig, chartConfig.id);
+                    createChart(chartConfig, `summary-${chartConfig.id}`);
+                });
+        }
+
+        function createChartWrapper(chartConfig, canvasId) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'chart-wrapper';
+            wrapper.innerHTML = `
+                <h3>${chartConfig.title}</h3>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="${canvasId}"></canvas>
+                </div>
+            `;
+            return wrapper;
+        }
+
+        function createChart(chartConfig, canvasId) {
+            const xAxis = chartConfig.xAxis;
+            const yAxis = chartConfig.yAxis;
+            const aggregation = chartConfig.aggregation;
+            const topN = chartConfig.topN || null;
+            const grouped = {};
+            state.filteredData.forEach(row => {
+                const key = row[xAxis] || '(blank)';
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(row);
+            });
+            let chartRows = Object.keys(grouped).map(label => ({ label, value: aggregate(grouped[label], yAxis, aggregation) }));
+            chartRows.sort((a, b) => b.value - a.value || String(a.label).localeCompare(String(b.label), 'en-US', { numeric: true }));
+            if (topN) chartRows = chartRows.slice(0, topN);
+            const chartLabels = chartRows.map(row => row.label);
+            const chartValues = chartRows.map(row => row.value);
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const colors = chartConfig.colorPalette || ['#00AEEF', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
+            const chartType = chartConfig.type === 'horizontalBar' ? 'bar' : chartConfig.type;
+            state.charts[canvasId] = new Chart(canvas.getContext('2d'), {
+                type: chartType,
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: chartConfig.title,
+                        data: chartValues,
+                        backgroundColor: chartLabels.map((_, i) => colors[i % colors.length]),
+                        borderColor: '#1a1f27',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: chartConfig.type === 'horizontalBar' ? 'y' : 'x',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: chartType === 'doughnut', labels: { color: '#e4e6eb' } } },
+                    scales: chartType === 'doughnut' ? {} : {
+                        x: { ticks: { color: '#8a8d91' }, grid: { color: '#2d3339' } },
+                        y: { ticks: { color: '#8a8d91' }, grid: { color: '#2d3339' } }
+                    },
+                    onClick: (event, elements) => {
+                        if (!elements.length) return;
+                        const label = chartLabels[elements[0].index];
+                        state.filters[xAxis] = label === '(blank)' ? '' : label;
+                        const select = document.querySelector(`select[name="${xAxis}"]`);
+                        if (select) select.value = state.filters[xAxis];
+                        filterData();
+                    }
+                }
+            });
+        }
+        // ========== PIVOT TABLE ==========
+        
+        function renderPivotTable() {
+            const table = document.getElementById('pivotTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            state.expandedRows.clear();
+            const levels = state.config.drillDownLevels.filter(hasDataColumn);
+            const metrics = state.config.tableMetrics.filter(metric => hasDataColumn(metric.column));
+            if (!levels.length) {
+                tbody.innerHTML = '<tr><td>No configured drill-down columns were found in this data file.</td></tr>';
+                return;
+            }
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = `<th>${getColumnLabel(levels[0])}</th>`;
+            metrics.forEach((metric, index) => {
+                const active = state.sortColumn === metric.column + '|' + metric.aggregation + '|' + index;
+                const mark = active ? (state.sortDirection === 'asc' ? ' ^' : ' v') : '';
+                headerRow.innerHTML += `<th data-sort-index="${index}" style="cursor: pointer; text-align: right;">${metric.label}${mark}</th>`;
+            });
+            thead.appendChild(headerRow);
+            thead.querySelectorAll('th[data-sort-index]').forEach(th => {
+                th.addEventListener('click', () => {
+                    const index = Number(th.dataset.sortIndex);
+                    const metric = metrics[index];
+                    const key = metric.column + '|' + metric.aggregation + '|' + index;
+                    if (state.sortColumn === key) state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+                    else { state.sortColumn = key; state.sortDirection = 'desc'; }
+                    renderPivotTable();
+                });
+            });
+            const rootItems = sortDrillItems(buildDrillDownLevel(state.filteredData, 0), metrics);
+            rootItems.forEach((item, idx) => {
+                tbody.insertAdjacentHTML('beforeend', drillRowHtml(item, 0, `root-${idx}`, '', metrics, levels));
+            });
+            tbody.insertAdjacentHTML('beforeend', totalsRowHtml(state.filteredData, 0, metrics));
+            tbody.querySelectorAll('.expand-arrow').forEach(bindExpandArrow);
+        }
+
+        function buildDrillDownLevel(data, levelIndex) {
+            const levels = state.config.drillDownLevels.filter(hasDataColumn);
+            if (levelIndex >= levels.length) return [];
+            const columnName = levels[levelIndex];
+            const grouped = new Map();
+            data.forEach(row => {
+                const key = String(row[columnName] ?? '') || '(blank)';
+                if (!grouped.has(key)) grouped.set(key, []);
+                grouped.get(key).push(row);
+            });
+            return Array.from(grouped.entries()).map(([key, rows]) => ({
+                label: key,
+                rows,
+                level: levelIndex,
+                column: columnName
+            }));
+        }
+
+        function sortDrillItems(items, metrics) {
+            if (!state.sortColumn) return items.sort((a, b) => String(a.label).localeCompare(String(b.label), 'en-US', { numeric: true }));
+            const parts = state.sortColumn.split('|');
+            const metric = metrics[Number(parts[2])];
+            if (!metric) return items;
+            const dir = state.sortDirection === 'asc' ? 1 : -1;
+            return items.sort((a, b) => {
+                const av = aggregate(a.rows, metric.column, metric.aggregation);
+                const bv = aggregate(b.rows, metric.column, metric.aggregation);
+                return dir * (av - bv) || String(a.label).localeCompare(String(b.label), 'en-US', { numeric: true });
+            });
+        }
+
+        function drillRowHtml(item, level, rowId, parentId, metrics, levels) {
+            const hasChildren = level < levels.length - 1;
+            const indent = 12 + level * 24;
+            let html = `<tr class="pivot-row ${level ? 'child-row' : ''}" data-row-id="${escapeAttr(rowId)}" data-parent-row-id="${escapeAttr(parentId)}" data-level="${level}" data-label="${escapeAttr(item.label)}">`;
+            html += `<td style="padding-left: ${indent}px;">`;
+            if (hasChildren) html += `<span class="expand-arrow" data-row-id="${escapeAttr(rowId)}">&#9654;</span>`;
+            else html += '<span style="display:inline-block;width:24px;"></span>';
+            html += `${escapeHtml(getColumnLabel(item.column))}: ${escapeHtml(item.label)}</td>`;
+            metrics.forEach(metric => {
+                const value = aggregate(item.rows, metric.column, metric.aggregation);
+                html += `<td data-sort-value="${value}" style="text-align: right;">${escapeHtml(formatValue(value, metric.format))}</td>`;
+            });
+            html += '</tr>';
+            return html;
+        }
+
+        function totalsRowHtml(rows, level, metrics) {
+            let html = `<tr class="totals-row child-row" data-parent-row-id="" data-level="${level}"><td style="padding-left: ${12 + level * 24}px;">Total</td>`;
+            metrics.forEach(metric => {
+                const value = aggregate(rows, metric.column, metric.aggregation);
+                html += `<td style="text-align: right;">${escapeHtml(formatValue(value, metric.format))}</td>`;
+            });
+            html += '</tr>';
+            return html;
+        }
+
+        function bindExpandArrow(arrow) {
+            if (arrow.dataset.bound) return;
+            arrow.dataset.bound = '1';
+            arrow.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const row = arrow.closest('tr');
+                const rowId = row.dataset.rowId;
+                if (state.expandedRows.has(rowId)) {
+                    state.expandedRows.delete(rowId);
+                    row.classList.remove('expanded');
+                    arrow.classList.remove('expanded');
+                    removeDescendantRows(row);
+                    return;
+                }
+                state.expandedRows.add(rowId);
+                row.classList.add('expanded');
+                arrow.classList.add('expanded');
+                const parentLevel = Number(row.dataset.level);
+                const childLevel = parentLevel + 1;
+                const rows = rowsForDrillPath(row);
+                const levels = state.config.drillDownLevels.filter(hasDataColumn);
+                const metrics = state.config.tableMetrics.filter(metric => hasDataColumn(metric.column));
+                const childItems = sortDrillItems(buildDrillDownLevel(rows, childLevel), metrics);
+                const html = childItems.map((item, idx) => drillRowHtml(item, childLevel, `${rowId}-${idx}`, rowId, metrics, levels)).join('') + totalsRowHtml(rows, childLevel, metrics);
+                row.insertAdjacentHTML('afterend', html);
+                let next = row.nextElementSibling;
+                while (next && Number(next.dataset.level) > parentLevel) {
+                    const childArrow = next.querySelector('.expand-arrow');
+                    if (childArrow) bindExpandArrow(childArrow);
+                    next = next.nextElementSibling;
+                }
+            });
+        }
+
+        function removeDescendantRows(row) {
+            const level = Number(row.dataset.level);
+            let next = row.nextElementSibling;
+            while (next && Number(next.dataset.level) > level) {
+                const doomed = next;
+                next = next.nextElementSibling;
+                doomed.remove();
+            }
+        }
+
+        function rowsForDrillPath(row) {
+            const path = [];
+            let current = row;
+            while (current && current.dataset.rowId) {
+                path.unshift({ level: Number(current.dataset.level), label: current.dataset.label });
+                const parentId = current.dataset.parentRowId;
+                current = parentId ? document.querySelector(`tr[data-row-id="${cssEscape(parentId)}"]`) : null;
+            }
+            const levels = state.config.drillDownLevels.filter(hasDataColumn);
+            return state.filteredData.filter(dataRow => path.every(part => {
+                const raw = String(dataRow[levels[part.level]] ?? '') || '(blank)';
+                return raw === part.label;
+            }));
+        }
+
+        function getColumnLabel(column) {
+            return state.config.columnMeta[column]?.label || column;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        }
+
+        function escapeAttr(value) {
+            return escapeHtml(value);
+        }
+
+        function cssEscape(value) {
+            return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        }
+        // ========== CLAIM DETAIL TABLE ==========
+        
+        const ROWS_PER_PAGE = 50;
+        
+        function renderClaimDetailTable() {
+            const table = document.getElementById('claimDetailTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            // Get visible columns based on columnMeta
+            const visibleColumns = Object.entries(state.config.columnMeta)
+                .filter(([col, meta]) => hasDataColumn(col) && !meta.hidden && !state.hiddenDetailColumns.has(col))
+                .map(([col, _]) => col);
+            
+            if (visibleColumns.length === 0) {
+                thead.innerHTML = '<tr><th>No visible columns</th></tr>';
+                return;
+            }
+            
+            // Build header
+            const headerRow = document.createElement('tr');
+            visibleColumns.forEach(col => {
+                const meta = state.config.columnMeta[col];
+                const th = document.createElement('th');
+                th.textContent = meta.label;
+                th.dataset.column = col;
+                th.addEventListener('click', () => {
+                    if (state.detailSortColumn === col) {
+                        state.detailSortDirection = state.detailSortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        state.detailSortColumn = col;
+                        state.detailSortDirection = 'asc';
+                    }
+                    renderClaimDetailTable();
+                });
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            
+            // Sort data
+            let sortedData = [...state.filteredData];
+            if (state.detailSortColumn) {
+                sortedData.sort((a, b) => {
+                    let aVal = a[state.detailSortColumn];
+                    let bVal = b[state.detailSortColumn];
+                    
+                    if (!isNaN(aVal) && !isNaN(bVal)) {
+                        aVal = parseFloat(aVal);
+                        bVal = parseFloat(bVal);
+                    }
+                    
+                    if (aVal < bVal) return state.detailSortDirection === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return state.detailSortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+            
+            // Paginate
+            const totalPages = Math.ceil(sortedData.length / ROWS_PER_PAGE);
+            state.currentPivotPage = Math.min(state.currentPivotPage, totalPages || 1);
+            const start = (state.currentPivotPage - 1) * ROWS_PER_PAGE;
+            const pageData = sortedData.slice(start, start + ROWS_PER_PAGE);
+            
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                visibleColumns.forEach(col => {
+                    const td = document.createElement('td');
+                    const meta = state.config.columnMeta[col];
+                    td.textContent = formatValue(row[col], meta.format);
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const container = document.getElementById('paginationContainer');
+            container.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Previous';
+            prevBtn.disabled = state.currentPivotPage === 1;
+            prevBtn.addEventListener('click', () => {
+                state.currentPivotPage--;
+                renderClaimDetailTable();
+            });
+            container.appendChild(prevBtn);
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= state.currentPivotPage - 1 && i <= state.currentPivotPage + 1)) {
+                    if (i > 1 && (i === 2 || state.currentPivotPage - 1 > i)) {
+                        const dots = document.createElement('span');
+                        dots.textContent = '...';
+                        if (container.lastChild?.textContent !== '...') container.appendChild(dots);
+                    }
+                    
+                    const btn = document.createElement('button');
+                    btn.textContent = i;
+                    btn.style.fontWeight = i === state.currentPivotPage ? 'bold' : 'normal';
+                    btn.style.backgroundColor = i === state.currentPivotPage ? 'var(--accent-color)' : '';
+                    btn.style.color = i === state.currentPivotPage ? 'var(--bg-dark)' : '';
+                    btn.addEventListener('click', () => {
+                        state.currentPivotPage = i;
+                        renderClaimDetailTable();
+                    });
+                    container.appendChild(btn);
+                }
+            }
+            
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next';
+            nextBtn.disabled = state.currentPivotPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                state.currentPivotPage++;
+                renderClaimDetailTable();
+            });
+            container.appendChild(nextBtn);
+            
+            const info = document.createElement('span');
+            info.textContent = `Page ${state.currentPivotPage} of ${totalPages}`;
+            info.style.marginLeft = '20px';
+            container.appendChild(info);
+        }
+
+        // ========== TAB NAVIGATION ==========
+        
+        function setupTabNavigation() {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    btn.classList.add('active');
+                    const tabId = btn.dataset.tab + '-tab';
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Trigger chart resize when switching to tab
+                    if (btn.dataset.tab === 'summary') {
+                        setTimeout(() => {
+                            Object.values(state.charts).forEach(chart => chart?.resize());
+                        }, 100);
+                    }
+                });
+            });
+        }
+
+        // ========== TOOLBAR BUTTONS ==========
+        
+        function setupToolbarButtons() {
+            document.getElementById('exportCsvBtn')?.addEventListener('click', exportPivotCsv);
+            document.getElementById('exportDetailCsvBtn')?.addEventListener('click', exportDetailCsv);
+            document.getElementById('exportPngBtn')?.addEventListener('click', exportChartsPng);
+            document.getElementById('exportDetailPngBtn')?.addEventListener('click', exportChartsPng);
+            document.getElementById('printBtn')?.addEventListener('click', () => window.print());
+            document.getElementById('detailPrintBtn')?.addEventListener('click', () => window.print());
+            document.getElementById('toggleDetailColsBtn')?.addEventListener('click', showDetailColumnVisibilityToggle);
+        }
+
+        function exportPivotCsv() {
+            exportDetailCsv();
+        }
+
+        function exportDetailCsv() {
+            const visibleColumns = Object.entries(state.config.columnMeta)
+                .filter(([col, meta]) => hasDataColumn(col) && !meta.hidden && !state.hiddenDetailColumns.has(col))
+                .map(([col, _]) => col);
+            
+            let csv = visibleColumns.map(col => {
+                const label = state.config.columnMeta[col].label;
+                return `"${label.replace(/"/g, '""')}"`;
+            }).join(',') + '\n';
+            
+            state.filteredData.forEach(row => {
+                const values = visibleColumns.map(col => {
+                    const val = row[col] || '';
+                    return `"${String(val).replace(/"/g, '""')}"`;
+                });
+                csv += values.join(',') + '\n';
+            });
+            
+            downloadCsv(csv, 'claims-export.csv');
+        }
+
+        function downloadCsv(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportChartsPng() {
+            const canvases = Array.from(document.querySelectorAll('#chartsContainer canvas'));
+            if (!canvases.length) {
+                alert('No chart found to export');
+                return;
+            }
+            const exportCanvas = document.createElement('canvas');
+            const cellWidth = 620;
+            const cellHeight = 360;
+            const columns = canvases.length > 1 ? 2 : 1;
+            exportCanvas.width = cellWidth * columns;
+            exportCanvas.height = cellHeight * Math.ceil(canvases.length / columns);
+            const ctx = exportCanvas.getContext('2d');
+            ctx.fillStyle = '#0f1419';
+            ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+            canvases.forEach((canvas, index) => {
+                const x = (index % columns) * cellWidth + 20;
+                const y = Math.floor(index / columns) * cellHeight + 20;
+                ctx.fillStyle = '#1a1f27';
+                ctx.fillRect(x - 10, y - 10, cellWidth - 20, cellHeight - 20);
+                ctx.drawImage(canvas, x, y, cellWidth - 40, cellHeight - 50);
+            });
+            const link = document.createElement('a');
+            link.href = exportCanvas.toDataURL('image/png');
+            link.download = 'chart-area-export.png';
+            link.click();
+        }
+
+        function showColumnVisibilityToggle() {
+            showDetailColumnVisibilityToggle();
+        }
+
+        function showDetailColumnVisibilityToggle() {
+            const menu = document.getElementById('detailColumnMenu');
+            if (!menu) return;
+            if (!menu.hidden) {
+                menu.hidden = true;
+                return;
+            }
+            menu.innerHTML = '';
+            Object.entries(state.config.columnMeta)
+                .filter(([col, meta]) => hasDataColumn(col) && !meta.hidden)
+                .forEach(([col, meta]) => {
+                    const label = document.createElement('label');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = !state.hiddenDetailColumns.has(col);
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) state.hiddenDetailColumns.delete(col);
+                        else state.hiddenDetailColumns.add(col);
+                        state.currentPivotPage = 1;
+                        renderClaimDetailTable();
+                    });
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(meta.label || col));
+                    menu.appendChild(label);
+                });
+            menu.hidden = false;
+        }
+        // ========== INITIALIZATION ==========
+        
+        document.addEventListener('DOMContentLoaded', loadConfig);
+    </script>
+</body>
+</html>
+
+
+
+
