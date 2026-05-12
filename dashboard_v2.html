@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRG Selections Overview</title>
+    
+    <!-- External CDN Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #f4f7f4;
+            --bg-darker: #eaf1ec;
+            --bg-card: #ffffff;
+            --bg-hover: #f7faf7;
+            --text-primary: #15231d;
+            --text-secondary: #66756e;
+            --accent-color: #1f8a5b;
+            --accent-light: #2ea66f;
+            --border-color: #dfe7e1;
+            --success-color: #1f8a5b;
+            --warning-color: #c48319;
+            --danger-color: #c84d42;
+            --blue-color: #2877b9;
+            --shadow: 0 10px 24px rgba(21, 35, 29, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ========== BANNER ========== */
+        .banner {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .banner h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* ========== FILTER BAR ========== */
+        .filter-bar {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 30px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .filter-group select {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        .filter-group select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(31, 138, 91, 0.12);
+        }
+
+        .file-input-group {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .file-input-group input[type="file"] {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-light);
+        }
+
+        .btn-secondary {
+            background-color: #e0e7e3;
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #d0dcd5;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            gap: 16px;
+            padding: 16px 30px;
+            overflow: hidden;
+        }
+
+        /* ========== PANELS ========== */
+        .panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 2px 8px rgba(21, 35, 29, 0.04);
+            overflow-y: auto;
+        }
+
+        .panel-1 {
+            flex: 1;
+            max-width: 50%;
+        }
+
+        .panel-2 {
+            flex: 1;
+            max-width: 50%;
+        }
+
+        .panel-3 {
+            flex: 1;
+            min-width: 100%;
+        }
+
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .bottom-section {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+        }
+
+        /* ========== VIEWS ========== */
+        .view {
+            background-color: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 150px;
+        }
+
+        .view-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .view-content {
+            flex: 1;
+            position: relative;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        canvas {
+            max-height: 100%;
+        }
+
+        /* ========== DRG SELECTOR ========== */
+        .drg-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .drg-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .drg-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .drg-button:hover {
+            background-color: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .drg-button.active {
+            background-color: var(--blue-color);
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+
+        .tax-id-dropdown {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .tax-id-dropdown label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .tax-id-dropdown select {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* ========== ERROR BANNER ========== */
+        .error-banner {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 12px 30px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .error-banner.show {
+            display: block;
+        }
+
+        .error-banner button {
+            background: white;
+            color: var(--danger-color);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1400px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .left-section,
+            .right-section {
+                max-width: 100%;
+            }
+
+            .panel-1,
+            .panel-2 {
+                max-width: 100%;
+            }
+
+            .bottom-section {
+                flex-direction: column;
+            }
+        }
+
+        .loading-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Error Banner -->
+        <div class="error-banner" id="errorBanner">
+            <span id="errorMessage"></span>
+            <button onclick="closeError()">Dismiss</button>
+        </div>
+
+        <!-- Banner -->
+        <div class="banner">
+            <h1>DRG Selections Overview</h1>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="loadmonthFilter">Load Month</label>
+                <select id="loadmonthFilter" onchange="applyFilters()">
+                    <option value="">All Load Months</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="clientFilter">Client</label>
+                <select id="clientFilter" onchange="applyFilters()">
+                    <option value="">All Clients</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="categoryFilter">Category</label>
+                <select id="categoryFilter" onchange="applyFilters()">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+
+            <div class="file-input-group">
+                <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="loadExcelFile()">
+                <label style="font-size: 12px; color: var(--text-secondary);">Select Excel file (col_name1, col_name2)</label>
+            </div>
+
+            <div class="filter-actions">
+                <button class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: View 1 & View 2 -->
+            <div class="left-section">
+                <div class="view">
+                    <div class="view-header">View 1 - col_name1</div>
+                    <div class="view-content">
+                        <div class="chart-container">
+                            <canvas id="chart1"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view">
+                    <div class="view-header">View 2 - col_name2</div>
+                    <div class="view-content">
+                        <div class="chart-container">
+                            <canvas id="chart2"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: View 3 & View 6 -->
+            <div class="right-section">
+                <div class="view">
+                    <div class="view-header">View 3</div>
+                    <div class="view-content">
+                        <div class="chart-container">
+                            <canvas id="chart3"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view">
+                    <div class="view-header">View 6</div>
+                    <div class="view-content">
+                        <div class="chart-container">
+                            <canvas id="chart6"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Panel: View 4 & View 5 with DRG Selector -->
+            <div class="bottom-section">
+                <div class="view">
+                    <div class="view-header">View 4</div>
+                    <div class="view-content">
+                        <div class="chart-container">
+                            <canvas id="chart4"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view">
+                    <div class="view-header">View 5 - DRG Selection with Tax IDs</div>
+                    <div class="view-content">
+                        <div class="drg-selector">
+                            <div>
+                                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Click on DRG Code:</label>
+                            </div>
+                            <div class="drg-list" id="drgList">
+                                <div class="loading-message">Load Excel file to populate DRG list</div>
+                            </div>
+                            <div class="tax-id-dropdown" id="taxIdDropdown" style="display: none;">
+                                <label>Tax IDs for Selected DRG:</label>
+                                <select id="taxIdSelect">
+                                    <option value="">Select Tax ID</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        const state = {
+            rawData: [],
+            filteredData: [],
+            charts: {},
+            selectedDrg: null
+        };
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Dashboard initialized and ready for Excel file upload');
+        });
+
+        async function loadExcelFile() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showError('Please select an Excel file');
+                return;
+            }
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                state.rawData = XLSX.utils.sheet_to_json(firstSheet);
+
+                console.log(`Excel file loaded: ${state.rawData.length} rows`);
+                console.log('Columns detected:', Object.keys(state.rawData[0] || {}));
+                console.log('First row:', state.rawData[0]);
+
+                state.filteredData = [...state.rawData];
+                initializeFilters();
+                populateDrgList();
+                renderDashboard();
+            } catch (error) {
+                console.error('Failed to load Excel file:', error);
+                showError(`Failed to load Excel file: ${error.message}`);
+            }
+        }
+
+        function initializeFilters() {
+            // Get unique values from data
+            const loadmonths = [...new Set(state.rawData
+                .map(row => row.loadmonth || row['Load Month'] || '')
+                .filter(v => v))
+            ].sort();
+
+            const clients = [...new Set(state.rawData
+                .map(row => row.client || row['Client'] || '')
+                .filter(v => v))
+            ].sort();
+
+            const categories = [...new Set(state.rawData
+                .map(row => row.category || row['Category'] || '')
+                .filter(v => v))
+            ].sort();
+
+            // Populate dropdowns
+            populateDropdown('loadmonthFilter', loadmonths);
+            populateDropdown('clientFilter', clients);
+            populateDropdown('categoryFilter', categories);
+        }
+
+        function populateDropdown(elementId, options) {
+            const select = document.getElementById(elementId);
+            // Keep the first "All" option
+            const allOption = select.querySelector('option');
+            while (select.children.length > 1) {
+                select.removeChild(select.lastChild);
+            }
+
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                select.appendChild(optionElement);
+            });
+        }
+
+        function populateDrgList() {
+            // Extract unique DRG codes (assuming there's a column for it)
+            const drgColumn = Object.keys(state.rawData[0] || {}).find(col =>
+                col.toLowerCase().includes('drg') || col.toLowerCase().includes('code')
+            );
+
+            if (!drgColumn) {
+                console.warn('No DRG column found in data');
+                return;
+            }
+
+            const drgs = [...new Set(state.filteredData
+                .map(row => row[drgColumn])
+                .filter(v => v))
+            ].sort();
+
+            const drgList = document.getElementById('drgList');
+            drgList.innerHTML = '';
+
+            if (drgs.length === 0) {
+                drgList.innerHTML = '<div class="loading-message">No DRG data found</div>';
+                return;
+            }
+
+            drgs.slice(0, 20).forEach(drg => {
+                const button = document.createElement('button');
+                button.className = 'drg-button';
+                button.textContent = drg;
+                button.onclick = () => selectDrg(drg, drgColumn);
+                drgList.appendChild(button);
+            });
+        }
+
+        function selectDrg(drgCode, drgColumn) {
+            state.selectedDrg = drgCode;
+
+            // Update button states
+            document.querySelectorAll('.drg-button').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === drgCode);
+            });
+
+            // Get tax IDs for this DRG
+            const taxIdColumn = Object.keys(state.rawData[0] || {}).find(col =>
+                col.toLowerCase().includes('tax') || col.toLowerCase().includes('id') || col.toLowerCase().includes('provider')
+            );
+
+            const filteredForDrg = state.filteredData.filter(row => row[drgColumn] === drgCode);
+            const taxIds = taxIdColumn ? 
+                [...new Set(filteredForDrg.map(row => row[taxIdColumn]).filter(v => v))].sort() : 
+                [];
+
+            // Populate tax ID dropdown
+            const taxIdSelect = document.getElementById('taxIdSelect');
+            taxIdSelect.innerHTML = '<option value="">Select Tax ID</option>';
+            taxIds.forEach(taxId => {
+                const option = document.createElement('option');
+                option.value = taxId;
+                option.textContent = taxId;
+                taxIdSelect.appendChild(option);
+            });
+
+            document.getElementById('taxIdDropdown').style.display = 'block';
+        }
+
+        function applyFilters() {
+            const loadmonth = document.getElementById('loadmonthFilter').value;
+            const client = document.getElementById('clientFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+
+            state.filteredData = state.rawData.filter(row => {
+                const rowLoadMonth = row.loadmonth || row['Load Month'] || '';
+                const rowClient = row.client || row['Client'] || '';
+                const rowCategory = row.category || row['Category'] || '';
+
+                if (loadmonth && rowLoadMonth !== loadmonth) return false;
+                if (client && rowClient !== client) return false;
+                if (category && rowCategory !== category) return false;
+                return true;
+            });
+
+            populateDrgList();
+            renderDashboard();
+        }
+
+        function resetFilters() {
+            document.getElementById('loadmonthFilter').value = '';
+            document.getElementById('clientFilter').value = '';
+            document.getElementById('categoryFilter').value = '';
+            state.filteredData = [...state.rawData];
+            state.selectedDrg = null;
+            populateDrgList();
+            document.getElementById('taxIdDropdown').style.display = 'none';
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            if (state.filteredData.length === 0) {
+                console.warn('No data available for rendering');
+                return;
+            }
+
+            // Destroy existing charts
+            Object.values(state.charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            state.charts = {};
+
+            renderChart1();
+            renderChart2();
+            renderChart3();
+            renderChart4();
+            renderChart5();
+            renderChart6();
+        }
+
+        function renderChart1() {
+            // View 1: Distribution of col_name1
+            const ctx = document.getElementById('chart1').getContext('2d');
+            const col1 = 'col_name1';
+            
+            const grouped = {};
+            state.filteredData.forEach(row => {
+                const val = row[col1] || 'Unknown';
+                grouped[val] = (grouped[val] || 0) + 1;
+            });
+
+            state.charts.chart1 = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(grouped),
+                    datasets: [{
+                        label: 'Count',
+                        data: Object.values(grouped),
+                        backgroundColor: 'rgba(31, 138, 91, 0.6)',
+                        borderColor: 'rgba(31, 138, 91, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderChart2() {
+            // View 2: Distribution of col_name2
+            const ctx = document.getElementById('chart2').getContext('2d');
+            const col2 = 'col_name2';
+
+            const grouped = {};
+            state.filteredData.forEach(row => {
+                const val = row[col2] || 'Unknown';
+                grouped[val] = (grouped[val] || 0) + 1;
+            });
+
+            state.charts.chart2 = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(grouped),
+                    datasets: [{
+                        data: Object.values(grouped),
+                        backgroundColor: [
+                            'rgba(31, 138, 91, 0.7)',
+                            'rgba(40, 119, 185, 0.7)',
+                            'rgba(196, 131, 25, 0.7)',
+                            'rgba(200, 77, 66, 0.7)',
+                            'rgba(100, 150, 100, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderChart3() {
+            // View 3: Sample data visualization
+            const ctx = document.getElementById('chart3').getContext('2d');
+
+            const labels = state.filteredData.slice(0, 10).map((_, i) => `Item ${i + 1}`);
+            const data = state.filteredData.slice(0, 10).map(() => Math.floor(Math.random() * 100));
+
+            state.charts.chart3 = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sample Metric',
+                        data: data,
+                        borderColor: 'rgba(31, 138, 91, 1)',
+                        backgroundColor: 'rgba(31, 138, 91, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true }
+                    }
+                }
+            });
+        }
+
+        function renderChart4() {
+            // View 4: Horizontal bar chart
+            const ctx = document.getElementById('chart4').getContext('2d');
+
+            const labels = ['Category A', 'Category B', 'Category C', 'Category D'];
+            const data = [45, 38, 52, 41];
+
+            state.charts.chart4 = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Values',
+                        data: data,
+                        backgroundColor: 'rgba(40, 119, 185, 0.6)',
+                        borderColor: 'rgba(40, 119, 185, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function renderChart5() {
+            // View 5: Already handled by DRG selector
+        }
+
+        function renderChart6() {
+            // View 6: Sample scatter-like visualization
+            const ctx = document.getElementById('chart6').getContext('2d');
+
+            const labels = state.filteredData.slice(0, 8).map((_, i) => `Point ${i + 1}`);
+            const data = state.filteredData.slice(0, 8).map(() => Math.floor(Math.random() * 80) + 20);
+
+            state.charts.chart6 = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Performance',
+                        data: data,
+                        borderColor: 'rgba(196, 131, 25, 1)',
+                        backgroundColor: 'rgba(196, 131, 25, 0.2)',
+                        pointBackgroundColor: 'rgba(196, 131, 25, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(196, 131, 25, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function showError(message) {
+            const banner = document.getElementById('errorBanner');
+            document.getElementById('errorMessage').textContent = message;
+            banner.classList.add('show');
+        }
+
+        function closeError() {
+            document.getElementById('errorBanner').classList.remove('show');
+        }
+    </script>
+</body>
+</html>

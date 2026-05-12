@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRG Selections Overview</title>
+    
+    <!-- External CDN Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js@2.26.0/dist/plotly.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #f4f7f4;
+            --bg-darker: #eaf1ec;
+            --bg-card: #ffffff;
+            --bg-hover: #f7faf7;
+            --text-primary: #15231d;
+            --text-secondary: #66756e;
+            --accent-color: #1f8a5b;
+            --accent-light: #2ea66f;
+            --border-color: #dfe7e1;
+            --success-color: #1f8a5b;
+            --warning-color: #c48319;
+            --danger-color: #c84d42;
+            --blue-color: #2877b9;
+            --shadow: 0 10px 24px rgba(21, 35, 29, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ========== BANNER ========== */
+        .banner {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .banner h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* ========== FILTER BAR ========== */
+        .filter-bar {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 30px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .filter-group select {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        .filter-group select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(31, 138, 91, 0.12);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-light);
+        }
+
+        .btn-secondary {
+            background-color: #e0e7e3;
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #d0dcd5;
+        }
+
+        /* ========== TABS ========== */
+        .tabs-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-card);
+            padding: 0 30px;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 14px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-button:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-button.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow: hidden;
+            padding: 20px 30px;
+        }
+
+        .tab-pane {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* ========== KPI CARDS ========== */
+        .kpi-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(21, 35, 29, 0.04);
+        }
+
+        .kpi-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .kpi-card-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .kpi-card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-color);
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        .kpi-card-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* ========== SANKEY CONTAINER ========== */
+        .sankey-container {
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        #sankey-chart {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* ========== ERROR BANNER ========== */
+        .error-banner {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 12px 30px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .error-banner.show {
+            display: block;
+        }
+
+        .error-banner button {
+            background: white;
+            color: var(--danger-color);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        /* ========== LOADING STATE ========== */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Error Banner -->
+        <div class="error-banner" id="errorBanner">
+            <span id="errorMessage"></span>
+            <button onclick="closeError()">Dismiss</button>
+        </div>
+
+        <!-- Banner -->
+        <div class="banner">
+            <h1>DRG Selections Overview</h1>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="loadmonthFilter">Load Month</label>
+                <select id="loadmonthFilter" onchange="applyFilters()">
+                    <option value="">All Load Months</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="clientFilter">Client</label>
+                <select id="clientFilter" onchange="applyFilters()">
+                    <option value="">All Clients</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="categoryFilter">Category</label>
+                <select id="categoryFilter" onchange="applyFilters()">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+                <button class="btn" onclick="exportData()">Export</button>
+            </div>
+        </div>
+
+        <!-- Tabs Container -->
+        <div class="tabs-container">
+            <div class="tab-nav">
+                <button class="tab-button active" onclick="switchTab('overview')">Overall Numbers</button>
+                <button class="tab-button" onclick="switchTab('sankey')">DRG Flow Analysis</button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Tab 1: Overall Numbers -->
+                <div id="overview" class="tab-pane active">
+                    <div class="loading-spinner" id="overviewLoading">
+                        <p>Loading data...</p>
+                    </div>
+                    <div class="kpi-cards-container" id="kpiCardsContainer">
+                        <!-- KPI cards will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Tab 2: Sankey Diagram -->
+                <div id="sankey" class="tab-pane">
+                    <div class="loading-spinner" id="sankeyLoading">
+                        <p>Loading Sankey diagram...</p>
+                    </div>
+                    <div class="sankey-container">
+                        <div id="sankey-chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        const state = {
+            rawData: [],
+            filteredData: [],
+            config: {
+                dataFile: 'payment_integrity_5000.csv'
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+
+        async function loadData() {
+            try {
+                console.log('Loading data from:', state.config.dataFile);
+                
+                const response = await fetch(state.config.dataFile);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                
+                const result = Papa.parse(text, { header: true, skipEmptyLines: true });
+                if (result.errors && result.errors.length > 0) {
+                    console.warn('CSV parse warnings:', result.errors);
+                }
+                state.rawData = result.data.filter(row => Object.keys(row).some(key => row[key]));
+                state.filteredData = [...state.rawData];
+                
+                console.log(`Data loaded successfully: ${state.rawData.length} rows`);
+                console.log('First row sample:', state.rawData[0]);
+                
+                initializeFilters();
+                renderDashboard();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                showError(`Failed to load ${state.config.dataFile}: ${error.message}`);
+            }
+        }
+
+        function initializeFilters() {
+            // Get unique values
+            const loadmonths = [...new Set(state.rawData
+                .map(row => row.loadmonth)
+                .filter(v => v))
+            ].sort();
+            
+            const clients = [...new Set(state.rawData
+                .map(row => row.client)
+                .filter(v => v))
+            ].sort();
+            
+            const categories = [...new Set(state.rawData
+                .map(row => row.category)
+                .filter(v => v))
+            ].sort();
+
+            // Populate dropdowns
+            const loadmonthSelect = document.getElementById('loadmonthFilter');
+            loadmonths.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month;
+                loadmonthSelect.appendChild(option);
+            });
+
+            const clientSelect = document.getElementById('clientFilter');
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client;
+                option.textContent = client;
+                clientSelect.appendChild(option);
+            });
+
+            const categorySelect = document.getElementById('categoryFilter');
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const loadmonth = document.getElementById('loadmonthFilter').value;
+            const client = document.getElementById('clientFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+
+            state.filteredData = state.rawData.filter(row => {
+                if (loadmonth && row.loadmonth !== loadmonth) return false;
+                if (client && row.client !== client) return false;
+                if (category && row.category !== category) return false;
+                return true;
+            });
+
+            renderDashboard();
+        }
+
+        function resetFilters() {
+            document.getElementById('loadmonthFilter').value = '';
+            document.getElementById('clientFilter').value = '';
+            document.getElementById('categoryFilter').value = '';
+            state.filteredData = [...state.rawData];
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            renderKpiCards();
+            renderSankey();
+        }
+
+        function renderKpiCards() {
+            const container = document.getElementById('kpiCardsContainer');
+            container.innerHTML = '';
+
+            if (state.filteredData.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">No data available for selected filters</p>';
+                return;
+            }
+
+            // Calculate KPIs
+            const totalClaims = state.filteredData.length;
+            const totalSelected = state.filteredData.filter(row => row.selected && parseInt(row.selected) > 0).length;
+            const totalApproved = state.filteredData.filter(row => row.approved && parseInt(row.approved) > 0).length;
+            const totalFindings = state.filteredData.reduce((sum, row) => sum + (parseInt(row.finding) || 0), 0);
+            const totalNoFindings = state.filteredData.reduce((sum, row) => sum + (parseInt(row.no_finding) || 0), 0);
+            const selectionRate = totalClaims > 0 ? ((totalSelected / totalClaims) * 100).toFixed(1) : 0;
+            const approvalRate = totalSelected > 0 ? ((totalApproved / totalSelected) * 100).toFixed(1) : 0;
+            const findingRate = (totalFindings + totalNoFindings) > 0 ? ((totalFindings / (totalFindings + totalNoFindings)) * 100).toFixed(1) : 0;
+
+            const kpis = [
+                { label: 'Total Claims', value: totalClaims.toLocaleString() },
+                { label: 'Total Selected', value: totalSelected.toLocaleString(), subtitle: `${selectionRate}% of claims` },
+                { label: 'Total Approved', value: totalApproved.toLocaleString(), subtitle: `${approvalRate}% of selected` },
+                { label: 'Findings', value: totalFindings.toLocaleString(), subtitle: `${findingRate}% finding rate` },
+                { label: 'No Findings', value: totalNoFindings.toLocaleString() },
+                { label: 'Unique Providers', value: [...new Set(state.filteredData.map(row => row.provider_id || row.client))].length }
+            ];
+
+            kpis.forEach(kpi => {
+                const card = document.createElement('div');
+                card.className = 'kpi-card';
+                card.innerHTML = `
+                    <div class="kpi-card-label">${kpi.label}</div>
+                    <div class="kpi-card-value">${kpi.value}</div>
+                    ${kpi.subtitle ? `<div class="kpi-card-subtitle">${kpi.subtitle}</div>` : ''}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderSankey() {
+            const container = document.getElementById('sankey-chart');
+            
+            if (state.filteredData.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-secondary);">No data available for selected filters</p>';
+                return;
+            }
+
+            // Build Sankey data: Category -> SubProgramType -> Status
+            const nodes = new Set();
+            const linkMap = {};
+
+            state.filteredData.forEach(row => {
+                const category = row.category || 'Unknown';
+                const subprogram = row.subprogramtype || 'Unknown';
+                const status = row.status || 'Unknown';
+
+                nodes.add(`Category: ${category}`);
+                nodes.add(`SubProgram: ${subprogram}`);
+                nodes.add(`Status: ${status}`);
+
+                // Category -> SubProgram link
+                const link1 = `${category}|${subprogram}`;
+                linkMap[link1] = (linkMap[link1] || 0) + 1;
+
+                // SubProgram -> Status link
+                const link2 = `${subprogram}|${status}`;
+                linkMap[link2] = (linkMap[link2] || 0) + 1;
+            });
+
+            const nodeArray = Array.from(nodes).sort();
+            const nodeIndices = {};
+            nodeArray.forEach((node, idx) => {
+                nodeIndices[node] = idx;
+            });
+
+            // Create links
+            const source = [];
+            const target = [];
+            const value = [];
+            const linkColors = [];
+
+            Object.keys(linkMap).forEach(link => {
+                const [from, to] = link.split('|');
+                const fromLabel = link.includes('Category:') ? `Category: ${from}` : 
+                                  link.includes('SubProgram:') ? `SubProgram: ${from}` : `Status: ${from}`;
+                const toLabel = link.includes('SubProgram:') ? `SubProgram: ${to}` : `Status: ${to}`;
+                
+                if (nodeIndices[fromLabel] !== undefined && nodeIndices[toLabel] !== undefined) {
+                    source.push(nodeIndices[fromLabel]);
+                    target.push(nodeIndices[toLabel]);
+                    value.push(linkMap[link]);
+                    linkColors.push('rgba(31, 138, 91, 0.4)');
+                }
+            });
+
+            const data = {
+                type: 'sankey',
+                node: {
+                    pad: 15,
+                    thickness: 20,
+                    line: {
+                        color: 'black',
+                        width: 0.5
+                    },
+                    label: nodeArray,
+                    color: nodeArray.map(node => {
+                        if (node.includes('Category:')) return '#1f8a5b';
+                        if (node.includes('SubProgram:')) return '#2877b9';
+                        return '#c48319';
+                    })
+                },
+                link: {
+                    source: source,
+                    target: target,
+                    value: value,
+                    color: linkColors
+                }
+            };
+
+            const layout = {
+                title: {
+                    text: 'DRG Selection Flow: Category → SubProgram → Status',
+                    font: { size: 14, color: '#15231d' }
+                },
+                font: {
+                    size: 12,
+                    family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto'
+                },
+                margin: { l: 20, r: 20, t: 40, b: 20 },
+                paper_bgcolor: 'rgba(244, 247, 244, 0)',
+                plot_bgcolor: 'rgba(255, 255, 255, 0)'
+            };
+
+            Plotly.newPlot('sankey-chart', [data], layout, { responsive: true });
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showError(message) {
+            const banner = document.getElementById('errorBanner');
+            document.getElementById('errorMessage').textContent = message;
+            banner.classList.add('show');
+        }
+
+        function closeError() {
+            document.getElementById('errorBanner').classList.remove('show');
+        }
+
+        function exportData() {
+            if (state.filteredData.length === 0) {
+                showError('No data to export');
+                return;
+            }
+
+            const csv = Papa.unparse(state.filteredData);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'drg_selections_export.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
