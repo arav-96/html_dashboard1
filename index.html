@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PI Analytics - DRG Program Stories</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="topbar">
+        <div class="topbar-meta">
+            <span class="topbar-date">13th May 2026</span>
+            <img src="client_logo.png" alt="Client Logo" class="client-logo">
+        </div>
+        <div class="topbar-content">
+            <div class="topbar-left">
+                <div class="logo-container">
+                    <img src="exl_logo.png" alt="Company Logo" class="logo">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+            <h1 class="topbar-title">PI Analytics - DRG Program Stories</h1>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-menu">
+            <div class="menu-item active" onclick="selectMenuItem(this, 'cva-landscape')">
+                <span class="menu-icon">📊</span>
+                <span class="menu-label">CVA Market landscape</span>
+            </div>
+            <div class="menu-item" onclick="selectMenuItem(this, 'cva-initiatives')">
+                <span class="menu-icon">📋</span>
+                <span class="menu-label">CVA Model initiatives Summary</span>
+            </div>
+            <div class="menu-item" onclick="selectMenuItem(this, 'trans-nf-reval')">
+                <span class="menu-icon">🔄</span>
+                <span class="menu-label">Transformational - NF Reval batches</span>
+            </div>
+            <div class="menu-item" onclick="selectMenuItem(this, 'trans-provider')">
+                <span class="menu-icon">🏥</span>
+                <span class="menu-label">Transformational - Provider Exclusivity</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="page-container">
+        <!-- Filter Panel -->
+        <section class="filter-panel">
+            <!-- Filters will be added later -->
+        </section>
+
+        <!-- KPI Cards Section -->
+        <section class="kpi-section">
+            <!-- KPI cards will be added later -->
+        </section>
+
+        <!-- Content Section -->
+        <section class="tabs-section">
+            <div id="cva-landscape" class="content-pane active">
+                <section class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h2>CVA Market landscape</h2>
+                            <p class="section-note">Hard-coded market tables from existing folder images. Other sections remain blank pending your next updates.</p>
+                        </div>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <span>Claim Volume</span>
+                            <strong>824,056</strong>
+                        </div>
+                        <div class="summary-card">
+                            <span>Distinct Providers</span>
+                            <strong>4,025</strong>
+                        </div>
+                        <div class="summary-card">
+                            <span>Average Claims / Month</span>
+                            <strong>31,694</strong>
+                        </div>
+                        <div class="summary-card">
+                            <span>Time Range</span>
+                            <strong>202401 to 202602</strong>
+                        </div>
+                    </div>
+
+                    <div class="data-table-wrap">
+                        <h3>Top 12 DRGs</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>DRG Code</th>
+                                    <th>Total Claims</th>
+                                    <th>Spend</th>
+                                    <th>Savings</th>
+                                    <th>Rec/Spend %</th>
+                                    <th>Distinct Providers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>871</td><td>284,013</td><td>$3.45B</td><td>$392.54M</td><td>11%</td><td>3,233</td></tr>
+                                <tr><td>193</td><td>86,769</td><td>$0.71B</td><td>$41.03M</td><td>6%</td><td>3,056</td></tr>
+                                <tr><td>189</td><td>66,044</td><td>$0.54B</td><td>$13.99M</td><td>3%</td><td>3,107</td></tr>
+                                <tr><td>177</td><td>58,255</td><td>$0.58B</td><td>$31.04M</td><td>5%</td><td>2,900</td></tr>
+                                <tr><td>280</td><td>56,519</td><td>$0.55B</td><td>$32.70M</td><td>6%</td><td>2,347</td></tr>
+                                <tr><td>872</td><td>52,440</td><td>$0.32B</td><td>$22.45M</td><td>7%</td><td>2,869</td></tr>
+                                <tr><td>853</td><td>49,171</td><td>$1.52B</td><td>$106.09M</td><td>7%</td><td>2,109</td></tr>
+                                <tr><td>682</td><td>46,504</td><td>$0.40B</td><td>$20.47M</td><td>5%</td><td>2,508</td></tr>
+                                <tr><td>190</td><td>45,124</td><td>$0.30B</td><td>$12.02M</td><td>4%</td><td>2,771</td></tr>
+                                <tr><td>64</td><td>41,040</td><td>$0.51B</td><td>$28.16M</td><td>6%</td><td>2,165</td></tr>
+                                <tr><td>308</td><td>25,530</td><td>$0.19B</td><td>$6.56M</td><td>4%</td><td>2,240</td></tr>
+                                <tr><td>854</td><td>12,647</td><td>$0.16B</td><td>$13.80M</td><td>9%</td><td>1,715</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="data-table-wrap">
+                        <h3>Provider Funnel by Strategy</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Funnel Bucket</th>
+                                    <th>Dist. Prov.</th>
+                                    <th>% Prov.</th>
+                                    <th>Claim Vol.</th>
+                                    <th>Claim %</th>
+                                    <th>Spend</th>
+                                    <th>Savings</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Completely Untargeted</td><td>1,008</td><td>25.0%</td><td>36,901</td><td>4%</td><td>$0.45B</td><td>–</td></tr>
+                                <tr><td>Mostly OV</td><td>617</td><td>15.3%</td><td>101,912</td><td>12%</td><td>$1.15B</td><td>$5.87M</td></tr>
+                                <tr><td>Mostly NAS</td><td>98</td><td>2.4%</td><td>31,503</td><td>4%</td><td>$0.37B</td><td>$2.04M</td></tr>
+                                <tr><td>All Vendor Exclusive</td><td>2,302</td><td>57.2%</td><td>653,740</td><td>79%</td><td>$7.25B</td><td>$757.65M</td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr><td>Total Dist.</td><td>4,025</td><td>100%</td><td>824,056</td><td>100%</td><td>$9.23B</td><td>$765.56M</td></tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="data-table-wrap">
+                        <h3>Financial Scale</h3>
+                        <table class="summary-table">
+                            <thead>
+                                <tr><th>Segment</th><th>MSDRG</th><th>DRGCL</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Overall</td><td>$607.28M</td><td>$1,011.14M</td></tr>
+                                <tr><td>Top 12</td><td>$65.37M</td><td>$700.19M</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="category-grid">
+                        <article class="category-card">
+                            <div class="category-header">
+                                <div>
+                                    <span class="category-badge">A</span>
+                                    <h3>Untargeted Provider</h3>
+                                </div>
+                            </div>
+                            <div class="category-overview">
+                                <div class="category-summary">
+                                    <div><strong>Unique Provider</strong> 1,008</div>
+                                    <div><strong>Claims</strong> 36,901</div>
+                                    <div><strong>Spend</strong> $0.452B</div>
+                                </div>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Category</th><th>Claim Vol.</th><th>%</th><th>Spend</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>GEN_EXL</td><td>16,628</td><td>45%</td><td>$0.144B</td></tr>
+                                        <tr><td>CLIENT_EXL</td><td>7,231</td><td>20%</td><td>$0.116B</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td>9,121</td><td>25%</td><td>$0.130B</td></tr>
+                                        <tr><td>CAT_OTHER_SEL</td><td>1,373</td><td>4%</td><td>$0.023B</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td>1,316</td><td>4%</td><td>$0.021B</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td>896</td><td>2%</td><td>$0.013B</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td>336</td><td>1%</td><td>$0.005B</td></tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr><td>Total</td><td>36,901</td><td>100%</td><td>$0.452B</td></tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="collapse-body">
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Prepay Summary</h4>
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr><th>Metric</th><th>Value</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>Volume</td><td>3,151 claims</td></tr>
+                                                <tr><td>Active TINs</td><td>290</td></tr>
+                                                <tr><td>Not found</td><td>718</td></tr>
+                                                <tr><td>Avg monthly</td><td>121 claims/mo</td></tr>
+                                                <tr><td>GEN_EXL</td><td>1,022 (32.4%)</td></tr>
+                                                <tr><td>Selectable pool</td><td>2,129 (67.6%)</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>Prepay Category Mix</h4>
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr><th>Category</th><th>Claim Vol.</th><th>%</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>CLIENT_EXL</td><td>5,244</td><td>72%</td></tr>
+                                                <tr><td>GEN_EXL</td><td>1,136</td><td>16%</td></tr>
+                                                <tr><td>CAT_AUTO_EXL</td><td>676</td><td>9%</td></tr>
+                                                <tr><td>Q_OTHER</td><td>98</td><td>1%</td></tr>
+                                                <tr><td>CAT_MANUAL_SEL</td><td>94</td><td>1%</td></tr>
+                                                <tr><td>CAT_AUTO_SEL</td><td>66</td><td>1%</td></tr>
+                                                <tr><td>CAT_CVA_SEL</td><td>9</td><td>0%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Prepay Error Reasons</h4>
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr><th>Error</th><th>Claim Vol.</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>Provider/Group is on hold</td><td>1,062</td></tr>
+                                                <tr><td>Not Assigned</td><td>135</td></tr>
+                                                <tr><td>Selected by Internal ICT team</td><td>3</td></tr>
+                                                <tr><td>Prepay Volume Limit Exceeded</td><td>1</td></tr>
+                                                <tr><td>Invalid Claim Status</td><td>1</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>General Exclusion Reasons</h4>
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr><th>Reason</th><th>Claim Vol.</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>Q_EXL_REHAB</td><td>520</td></tr>
+                                                <tr><td>Q_EXL_885</td><td>216</td></tr>
+                                                <tr><td>Q_EXL_ZERO_CCMCC_HUM_DA</td><td>73</td></tr>
+                                                <tr><td>Q_EXL_REHAB | Q_EXL_ZERO_CCMCC_HUM_DA_CU2</td><td>54</td></tr>
+                                                <tr><td>Q_EXL_3000 | Q_EXL_2K_TO_3K</td><td>44</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="collapse-button" onclick="togglePanel(this)">Show pre/post details</button>
+                            </div>
+                        </article>
+
+                        <article class="category-card">
+                            <div class="category-header">
+                                <div>
+                                    <span class="category-badge">B</span>
+                                    <h3>OV Exclusive Provider</h3>
+                                </div>
+                            </div>
+                            <div class="category-overview">
+                                <div class="category-summary">
+                                    <div><strong>Unique Provider</strong> 617</div>
+                                    <div><strong>Claims</strong> 101,942</div>
+                                    <div><strong>Spend</strong> $1.154B</div>
+                                </div>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Category</th><th>Claim Vol.</th><th>%</th><th>Spend</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>GEN_EXL</td><td>59,969</td><td>59%</td><td>$0.596B</td></tr>
+                                        <tr><td>CLIENT_EXL</td><td>25,366</td><td>25%</td><td>$0.301B</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td>11,483</td><td>11%</td><td>$0.171B</td></tr>
+                                        <tr><td>CAT_OTHER_SEL</td><td>1,910</td><td>2%</td><td>$0.033B</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td>1,807</td><td>2%</td><td>$0.030B</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td>1,033</td><td>1%</td><td>$0.015B</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td>344</td><td>0%</td><td>$0.004B</td></tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr><td>Total</td><td>101,912</td><td>100%</td><td>$1.15B</td></tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="collapse-body">
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Prepay Metrics</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Initial</td><td>8,563</td></tr>
+                                                <tr><td>Final Selection</td><td>1,240</td></tr>
+                                                <tr><td>MOAT</td><td>25</td></tr>
+                                                <tr><td>Cancelled</td><td>12</td></tr>
+                                                <tr><td>GAP (Init-Final)</td><td>7,323</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>Postpay Metrics</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Initial</td><td>331,202</td></tr>
+                                                <tr><td>Final Selection</td><td>34,035</td></tr>
+                                                <tr><td>MOAT</td><td>288</td></tr>
+                                                <tr><td>Cancelled</td><td>89</td></tr>
+                                                <tr><td>GAP (Init-Final)</td><td>297,167</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Postpay Category Mix</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Category</th><th>Claim Vol.</th><th>%</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>CLIENT_EXL</td><td>235,944</td><td>79%</td></tr>
+                                                <tr><td>GEN_EXL</td><td>21,353</td><td>7%</td></tr>
+                                                <tr><td>CAT_AUTO_EXL</td><td>33,318</td><td>11%</td></tr>
+                                                <tr><td>Q_OTHER</td><td>4,487</td><td>6%</td></tr>
+                                                <tr><td>CAT_AUTO_SEL</td><td>630</td><td>0%</td></tr>
+                                                <tr><td>CAT_CVA_SEL</td><td>574</td><td>0%</td></tr>
+                                                <tr><td>CAT_MANUAL_SEL</td><td>248</td><td>0%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>Postpay Error Summary</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Error</th><th>Vol.</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Provider/Group is on hold</td><td>5,752</td></tr>
+                                                <tr><td>Not Assigned</td><td>181</td></tr>
+                                                <tr><td>Invalid Claim Status</td><td>148</td></tr>
+                                                <tr><td>Claim open/audited under different extract</td><td>3</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="collapse-button" onclick="togglePanel(this)">Show pre/post details</button>
+                            </div>
+                        </article>
+
+                        <article class="category-card">
+                            <div class="category-header">
+                                <div>
+                                    <span class="category-badge">C</span>
+                                    <h3>NAS Exclusive Provider</h3>
+                                </div>
+                            </div>
+                            <div class="category-overview">
+                                <div class="category-summary">
+                                    <div><strong>Unique Provider</strong> 98</div>
+                                    <div><strong>Claims</strong> 31,503</div>
+                                    <div><strong>Spend</strong> $0.372B</div>
+                                </div>
+                                <table class="data-table">
+                                    <thead><tr><th>Category</th><th>Claim Vol.</th><th>%</th><th>Spend</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>GEN_EXL</td><td>17,681</td><td>56%</td><td>$0.189B</td></tr>
+                                        <tr><td>CLIENT_EXL</td><td>1,299</td><td>4%</td><td>$0.015B</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td>8,022</td><td>25%</td><td>$0.108B</td></tr>
+                                        <tr><td>CAT_OTHER_SEL</td><td>1,753</td><td>6%</td><td>$0.026B</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td>1,347</td><td>4%</td><td>$0.017B</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td>1,150</td><td>4%</td><td>$0.015B</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td>251</td><td>1%</td><td>$0.002B</td></tr>
+                                    </tbody>
+                                    <tfoot><tr><td>Total</td><td>31,503</td><td>100%</td><td>$0.372B</td></tr></tfoot>
+                                </table>
+                            </div>
+                            <div class="collapse-body">
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Prepay Metrics</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Active TINs</td><td>51 (4-16/M)</td></tr>
+                                                <tr><td>Avg monthly</td><td>168 claims/mo</td></tr>
+                                                <tr><td>Initial</td><td>4,371</td></tr>
+                                                <tr><td>Final Sel</td><td>2,499</td></tr>
+                                                <tr><td>MOAT</td><td>66</td></tr>
+                                                <tr><td>Cancelled</td><td>3</td></tr>
+                                                <tr><td>Finding</td><td>14</td></tr>
+                                                <tr><td>No Finding</td><td>40</td></tr>
+                                                <tr><td>GAP</td><td>1,872</td></tr>
+                                                <tr><td>Drop-off</td><td>2,483</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>Prepay Category Mix</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Category</th><th>Claim Vol.</th><th>%</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>CAT_AUTO_EXL</td><td>933</td><td>50%</td></tr>
+                                                <tr><td>GEN_EXL</td><td>550</td><td>29%</td></tr>
+                                                <tr><td>CLIENT_EXL</td><td>132</td><td>7%</td></tr>
+                                                <tr><td>Q_OTHER</td><td>160</td><td>9%</td></tr>
+                                                <tr><td>CAT_MANUAL_SEL</td><td>84</td><td>4%</td></tr>
+                                                <tr><td>CAT_AUTO_SEL</td><td>8</td><td>0%</td></tr>
+                                                <tr><td>CAT_CVA_SEL</td><td>5</td><td>0%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Prepay Errors</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Error</th><th>Vol.</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Provider/Group is on hold</td><td>2,389</td></tr>
+                                                <tr><td>Not Assigned</td><td>26</td></tr>
+                                                <tr><td>Selected by Internal ICT team</td><td>4</td></tr>
+                                                <tr><td>Claim open/audited under different extract</td><td>1</td></tr>
+                                                <tr><td>Prepay Volume Limit Exceeded</td><td>1</td></tr>
+                                                <tr><td>Invalid Claim Status</td><td>1</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>Postpay Metrics</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Active TINs</td><td>93 (52-63/M)</td></tr>
+                                                <tr><td>Avg monthly</td><td>3,244 claims/mo</td></tr>
+                                                <tr><td>Initial</td><td>84,356</td></tr>
+                                                <tr><td>Final Sel</td><td>11,655</td></tr>
+                                                <tr><td>MOAT</td><td>3,931</td></tr>
+                                                <tr><td>Cancelled</td><td>2,638</td></tr>
+                                                <tr><td>Finding</td><td>10</td></tr>
+                                                <tr><td>No Finding</td><td>26</td></tr>
+                                                <tr><td>GAP</td><td>72,801</td></tr>
+                                                <tr><td>Drop-off</td><td>7,724</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Postpay Category Mix</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Category</th><th>Claim Vol.</th><th>%</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>CLIENT_EXL</td><td>43,345</td><td>60%</td></tr>
+                                                <tr><td>GEN_EXL</td><td>7,115</td><td>10%</td></tr>
+                                                <tr><td>CAT_AUTO_EXL</td><td>16,713</td><td>23%</td></tr>
+                                                <tr><td>Q_OTHER</td><td>4,088</td><td>6%</td></tr>
+                                                <tr><td>CAT_AUTO_SEL</td><td>618</td><td>1%</td></tr>
+                                                <tr><td>CAT_CVA_SEL</td><td>574</td><td>1%</td></tr>
+                                                <tr><td>CAT_MANUAL_SEL</td><td>248</td><td>0%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>Postpay Status</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Status</th><th>Claim Vol.</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Cancelled</td><td>2,638</td></tr>
+                                                <tr><td>Selection Completed</td><td>1,214</td></tr>
+                                                <tr><td>Completed - initial NO Finding</td><td>24</td></tr>
+                                                <tr><td>Ready to Send Selection to Client for Approval</td><td>13</td></tr>
+                                                <tr><td>Ready for Nurse</td><td>11</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="collapse-button" onclick="togglePanel(this)">Show pre/post details</button>
+                            </div>
+                        </article>
+
+                        <article class="category-card">
+                            <div class="category-header">
+                                <div>
+                                    <span class="category-badge">D</span>
+                                    <h3>All Vendor Exclusive Provider</h3>
+                                </div>
+                            </div>
+                            <div class="category-overview">
+                                <div class="category-summary">
+                                    <div><strong>Unique Provider</strong> 2,302</div>
+                                    <div><strong>Claims</strong> 653,740</div>
+                                    <div><strong>Spend</strong> $7.25B</div>
+                                </div>
+                                <table class="data-table">
+                                    <thead><tr><th>Vendor</th><th>Claim Vol.</th><th>Spend</th><th>Savings</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Unaudited</td><td>336,132</td><td>$3.265B</td><td>$0M</td></tr>
+                                        <tr><td>ICT</td><td>144,816</td><td>$1.824B</td><td>$481.08M</td></tr>
+                                        <tr><td>NAS</td><td>114,361</td><td>$1.486B</td><td>$225.02M</td></tr>
+                                        <tr><td>Below Vendor</td><td>58,431</td><td>$0.675B</td><td>$51.55M</td></tr>
+                                    </tbody>
+                                    <tfoot><tr><td>Total</td><td>653,740</td><td>$7.25B</td><td>$757.65M</td></tr></tfoot>
+                                </table>
+                                <table class="data-table mt-2">
+                                    <thead><tr><th>Category</th><th>Claim Vol.</th><th>%</th><th>Spend</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>GEN_EXL</td><td>121,937</td><td>36%</td><td>$0.257B</td></tr>
+                                        <tr><td>CLIENT_EXL</td><td>6,182</td><td>2%</td><td>$0.070B</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td>108,158</td><td>32%</td><td>$1.544B</td></tr>
+                                        <tr><td>CAT_OTHER_SEL</td><td>44,381</td><td>13%</td><td>$0.690B</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td>35,810</td><td>11%</td><td>$0.442B</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td>16,665</td><td>5%</td><td>$0.232B</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td>2,999</td><td>1%</td><td>$0.031B</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="collapse-body">
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Part 1: Flow Summary</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Flow</th><th>Total</th><th>Gen Exl</th><th>Potential</th><th>Final Sel</th><th>Moat Appr.</th><th>Cancelled</th><th>GAP</th><th>Error Out</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Prepay</td><td>1,391,204</td><td>292,411</td><td>1,098,793</td><td>510,824</td><td>157,663</td><td>4,452</td><td>587,969</td><td>353,161</td></tr>
+                                                <tr><td>Postpay</td><td>1,485,517</td><td>451,976</td><td>1,033,541</td><td>236,730</td><td>163,579</td><td>30,555</td><td>796,811</td><td>73,151</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>Part 1: Category Volume</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Category</th><th>Claim Vol.</th><th>%</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>CAT_AUTO_EXL</td><td>433,450</td><td>74%</td></tr>
+                                                <tr><td>Q_OTHER</td><td>105,303</td><td>18%</td></tr>
+                                                <tr><td>CAT_MANUAL_SEL</td><td>26,393</td><td>4%</td></tr>
+                                                <tr><td>CAT_AUTO_SEL</td><td>19,244</td><td>3%</td></tr>
+                                                <tr><td>CAT_CVA_SEL</td><td>3,579</td><td>1%</td></tr>
+                                                <tr><td colspan="3"><strong>Grand Total</strong> 587,969</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="split-grid">
+                                    <div>
+                                        <h4>Part 2: Coded Band Distribution</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Band</th><th>Green</th><th>Amber</th><th>Grey</th><th>Red</th><th>Grand Total</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Green</td><td>425</td><td>1,110</td><td>8,533</td><td>11,992</td><td>22,060</td></tr>
+                                                <tr><td>Amber</td><td>1,996</td><td>10,419</td><td>76,204</td><td>122,652</td><td>211,271</td></tr>
+                                                <tr><td>Grey</td><td>705</td><td>6,806</td><td>53,232</td><td>130,258</td><td>191,001</td></tr>
+                                                <tr><td>Red</td><td>1,159</td><td>7,921</td><td>40,590</td><td>91,144</td><td>140,814</td></tr>
+                                                <tr><td><strong>Total</strong></td><td>4,285</td><td>26,256</td><td>178,559</td><td>356,046</td><td>565,146</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <h4>Part 2: Downcodeable</h4>
+                                        <table class="data-table">
+                                            <thead><tr><th>Low Weight</th><th>No</th><th>Yes</th><th>Grand Total</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>No</td><td>4,137</td><td>217,192</td><td>221,329</td></tr>
+                                                <tr><td>Yes</td><td>8,026</td><td>140,525</td><td>148,551</td></tr>
+                                                <tr><td><strong>Total</strong></td><td>12,163</td><td>357,717</td><td>369,880</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="collapse-button" onclick="togglePanel(this)">Show pre/post details</button>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+            </div>
+
+            <div id="cva-initiatives" class="content-pane">
+                <div class="content-placeholder">
+                    <p>CVA Model initiatives Summary content will be added here.</p>
+                </div>
+            </div>
+
+            <div id="trans-nf-reval" class="content-pane">
+                <div class="content-placeholder">
+                    <p>Transformational - NF Reval batches content will be added here.</p>
+                </div>
+            </div>
+
+            <div id="trans-provider" class="content-pane">
+                <div class="content-placeholder">
+                    <p>Transformational - Provider Exclusivity content will be added here.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

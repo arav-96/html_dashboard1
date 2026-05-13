@@ -1,0 +1,191 @@
+{
+  "dashboard": {
+    "name": "DRG Payment Integrity Dashboard",
+    "version": "1.0",
+    "palette": "Clinical Light",
+    "created": "May 2026"
+  },
+  "colors": {
+    "backgrounds": {
+      "primary": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "elevated": "#F1F5F9",
+      "description": "Page background, cards/panels/topbar, table alt rows/filter tracks"
+    },
+    "borders": {
+      "default": "#E2E8F0",
+      "focus": "#BFDBFE",
+      "description": "All dividers and outlines; input focus ring"
+    },
+    "accents": {
+      "navy": "#1D4ED8",
+      "teal": "#0D9488",
+      "red": "#DC2626",
+      "amber": "#D97706",
+      "violet": "#7C3AED",
+      "cyan": "#0EA5E9",
+      "green": "#059669",
+      "usage": "Primary CTA/tabs/links; findings/positive; high cost/alert; outlier/warning; MCC; chart series"
+    },
+    "text": {
+      "primary": "#0F172A",
+      "secondary": "#64748B",
+      "muted": "#94A3B8",
+      "description": "Headings/KPI/data; labels/headers/subtitles; placeholder/disabled/no-change"
+    }
+  },
+  "chartjs": {
+    "colorSequence": [
+      "#1D4ED8",
+      "#0D9488",
+      "#D97706",
+      "#DC2626",
+      "#7C3AED",
+      "#0EA5E9",
+      "#059669"
+    ],
+    "colorNames": [
+      "Navy",
+      "Teal",
+      "Amber",
+      "Red",
+      "Violet",
+      "Cyan",
+      "Green"
+    ],
+    "gridlineOpacity": 0.5
+  },
+  "components": {
+    "kpiCards": {
+      "background": "#FFFFFF",
+      "border": "0.5px #E2E8F0",
+      "topBorder": "2px #1D4ED8",
+      "valueFont": "20px/500",
+      "labelFont": "11px",
+      "trendColorPositive": "#0D9488",
+      "trendColorNegative": "#DC2626",
+      "trendColorNeutral": "#94A3B8"
+    },
+    "table": {
+      "headerBackground": "#F1F5F9",
+      "alternateRows": ["#FFFFFF", "#F1F5F9"],
+      "hoverBackground": "#EFF6FF",
+      "expandedBorder": "2px solid #1D4ED8",
+      "childRowPaddingLeft": "20px",
+      "highCostColor": "#DC2626",
+      "conditionMCC": {
+        "background": "#EDE9FE",
+        "text": "#5B21B6"
+      },
+      "conditionCC": {
+        "background": "#DBEAFE",
+        "text": "#1E40AF"
+      },
+      "conditionOther": {
+        "background": "#F1F5F9",
+        "text": "#64748B"
+      },
+      "findingYes": {
+        "background": "#F0FDF4",
+        "text": "#15803D"
+      },
+      "findingNo": {
+        "background": "#FEF2F2",
+        "text": "#DC2626"
+      }
+    },
+    "filters": {
+      "background": "#FFFFFF",
+      "border": "0.5px #E2E8F0",
+      "focusRing": "#BFDBFE",
+      "activeBadgeBackground": "#EFF6FF",
+      "activeBadgeColor": "#1D4ED8",
+      "activeBadgeBorder": "0.5px #BFDBFE",
+      "inactiveBadgeBackground": "#F1F5F9"
+    },
+    "charts": {
+      "tooltip": {
+        "background": "#FFFFFF",
+        "border": "0.5px #E2E8F0",
+        "text": "#0F172A"
+      },
+      "gridlines": "#E2E8F0",
+      "axisLabels": "#64748B"
+    },
+    "tabs": {
+      "activeUnderline": "2px #1D4ED8",
+      "activeText": "#0F172A",
+      "inactiveText": "#64748B"
+    },
+    "buttons": {
+      "background": "#FFFFFF",
+      "border": "0.5px #E2E8F0",
+      "text": "#64748B",
+      "hoverBackground": "#F1F5F9"
+    }
+  },
+  "rules": {
+    "pageBackground": "Always use --bg-primary (#F8FAFC), never pure white",
+    "colorContrast": "All colors within #F8FAFC to #0F172A range",
+    "accessibility": "WCAG AA compliant color combinations",
+    "print": "White backgrounds, primary text color, border color borders, hide filters/exports, show KPIs/charts/pivot stacked"
+  },
+  "files": {
+    "index.html": "Main dashboard markup with KPI cards, filters, tabs, tables, and charts",
+    "styles.css": "Complete styling with color palette variables and responsive design",
+    "script.js": "Chart initialization, tab switching, row expansion, filter management, export",
+    "LAUNCH.bat": "Windows batch file for quick dashboard launch",
+    "README.md": "Documentation and usage guide",
+    "config.json": "This configuration file"
+  },
+  "dependencies": {
+    "chartjs": {
+      "version": "4.4.0",
+      "cdn": "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+    },
+    "chartjs-datalabels": {
+      "version": "2.2.0",
+      "cdn": "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"
+    }
+  },
+  "usage": {
+    "quickStart": "Run LAUNCH.bat or open index.html in a browser",
+    "expandRows": "Click expand arrows (▶) in table to view detailed findings",
+    "filterData": "Use dropdown selectors to filter by date, provider, or condition",
+    "switchTabs": "Click tab buttons to view Overview, Findings, Conditions, or Outliers",
+    "exportData": "Click 'Export CSV' to download table data",
+    "printDashboard": "Click 'Print' to generate print-friendly version"
+  },
+  "sampleData": {
+    "totalCases": 1005,
+    "casesWithFindings": 847,
+    "findingRate": "5.2%",
+    "highCostCases": 156,
+    "totalPaidAmount": "$2.4M",
+    "providers": [
+      "Provider A",
+      "Provider B",
+      "Provider C"
+    ],
+    "conditionTypes": [
+      {
+        "type": "MCC",
+        "cases": 342,
+        "avgPayment": 24580,
+        "findingRate": "6.1%"
+      },
+      {
+        "type": "CC",
+        "cases": 418,
+        "avgPayment": 18920,
+        "findingRate": "4.3%"
+      },
+      {
+        "type": "OTHER",
+        "cases": 245,
+        "avgPayment": 14340,
+        "findingRate": "3.9%"
+      }
+    ]
+  }
+}
