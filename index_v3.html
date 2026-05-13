@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PI Analytics - DRG Program Stories</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ════════════════════════════════════════════
+           CLINICAL LIGHT — CSS DESIGN TOKENS
+        ════════════════════════════════════════════ */
+        :root {
+            --bg-primary:    #F8FAFC;
+            --bg-surface:    #FFFFFF;
+            --bg-elevated:   #F1F5F9;
+            --border:        #E2E8F0;
+            --border-focus:  #BFDBFE;
+
+            --accent-navy:   #1D4ED8;
+            --accent-teal:   #0D9488;
+            --accent-red:    #DC2626;
+            --accent-amber:  #D97706;
+            --accent-violet: #7C3AED;
+
+            --text-primary:   #0F172A;
+            --text-secondary: #64748B;
+            --text-muted:     #94A3B8;
+        }
+
+        /* ════ Base ════ */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+        }
+
+        /* ════ Topbar ════ */
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 200;
+            background: var(--bg-surface);
+            box-shadow: 0 1px 0 var(--border), 0 2px 8px rgba(15,23,42,.06);
+        }
+        .topbar-row1 {
+            display: flex; align-items: center;
+            padding: 0 20px; height: 54px;
+            border-bottom: 1px solid var(--border);
+        }
+        .topbar-left-group {
+            flex: 0 0 auto; display: flex; align-items: center;
+            gap: 10px; margin-right: 16px;
+        }
+        .topbar-exl-block { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+        .topbar-exl-block .logo { height: 26px; width: auto; object-fit: contain; }
+        .topbar-date { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
+        .topbar-centre { flex: 1 1 auto; display: flex; justify-content: center; }
+        .topbar-title {
+            font-size: 1.1rem; font-weight: 700; color: var(--text-primary);
+            margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .topbar-right { flex: 0 0 auto; display: flex; align-items: center; margin-left: 16px; }
+        .client-logo-img { height: 36px; width: auto; object-fit: contain; }
+        .topbar-row2 {
+            background: var(--accent-navy); height: 30px;
+            display: flex; align-items: center;
+            padding: 0 20px 0 56px;
+        }
+        #sectionSubtitleText {
+            font-size: 0.78rem; font-weight: 600;
+            color: #BFDBFE; letter-spacing: 0.4px; text-transform: uppercase;
+        }
+        .sidebar-toggle {
+            background: none; border: none; cursor: pointer;
+            padding: 4px; display: flex; flex-direction: column; gap: 5px;
+        }
+        .sidebar-toggle span {
+            display: block; width: 22px; height: 2px;
+            background: var(--accent-navy); border-radius: 2px;
+        }
+        .sidebar { top: 84px; z-index: 100; }
+        .page-container { padding-top: 84px; background: var(--bg-primary); min-height: 100vh; }
+
+        /* ════ Sidebar ════ */
+        .sidebar {
+            position: fixed; left: 0;
+            width: 240px; height: calc(100vh - 84px);
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+        }
+        .menu-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 16px; cursor: pointer;
+            font-size: 0.82rem; font-weight: 500;
+            color: var(--text-secondary);
+            border-left: 3px solid transparent;
+            transition: background .15s, color .15s;
+        }
+        .menu-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+        .menu-item.active {
+            background: #EFF6FF; color: var(--accent-navy);
+            border-left-color: var(--accent-navy); font-weight: 600;
+        }
+        .menu-icon { font-size: 1rem; }
+        .menu-label { flex: 1; }
+
+        /* ════ Content panes ════ */
+        .tabs-section { margin-left: 240px; }
+        .content-pane { display: none; padding: 20px 24px; }
+        .content-pane.active { display: block; }
+        .content-section { max-width: 1400px; }
+        .section-header { margin-bottom: 16px; }
+        .section-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+        .section-note { font-size: 0.78rem; color: var(--text-secondary); margin: 0; }
+
+        /* ════ NF Reval ════ */
+        .nf-reval-section { padding: 4px 0; }
+        .nf-section-header-wrap { position: relative; }
+        .nf-upload-icon-wrap { position: absolute; top: 10px; right: 16px; }
+        .nf-upload-icon-btn {
+            background: var(--bg-surface); border: 0.5px solid var(--border);
+            border-radius: 6px; padding: 4px 9px; cursor: pointer;
+            font-size: 1rem; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 4px;
+            transition: background .15s; position: relative;
+        }
+        .nf-upload-icon-btn:hover { background: var(--bg-elevated); }
+        .nf-upload-icon-btn input[type="file"] {
+            position: absolute; inset: 0; opacity: 0;
+            cursor: pointer; width: 100%; height: 100%;
+        }
+        .nf-view-header { display: flex; align-items: center; gap: 10px; margin: 22px 0 10px; }
+        .nf-view-header h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .view-badge {
+            background: var(--accent-navy); color: #fff;
+            border-radius: 4px; padding: 2px 9px;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .nf-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+        .savings-positive { color: var(--accent-teal); font-weight: 600; }
+        .hitrate-cell { font-weight: 700; color: var(--accent-navy); }
+
+        /* Batch summary table */
+        .batch-table-wrap { overflow-x: auto; margin-bottom: 6px; }
+        .batch-summary-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+        .batch-summary-table thead th {
+            background: var(--bg-elevated); color: var(--text-secondary);
+            padding: 8px 12px; text-align: left; white-space: nowrap;
+            border-bottom: 2px solid var(--border); font-weight: 600; font-size: 0.78rem;
+        }
+        .batch-summary-table tbody tr {
+            border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s;
+        }
+        .batch-summary-table tbody tr:nth-child(even) { background: var(--bg-elevated); }
+        .batch-summary-table tbody tr:hover { background: #EFF6FF; }
+        .batch-summary-table tbody tr.active-batch {
+            background: #EFF6FF; font-weight: 600;
+            border-left: 2px solid var(--accent-navy);
+        }
+        .batch-summary-table td { padding: 7px 12px; color: var(--text-primary); }
+        .batch-name-cell { display: flex; align-items: center; gap: 6px; }
+        .expand-icon { font-size: 0.68rem; color: var(--accent-navy); transition: transform .2s; }
+        .active-batch .expand-icon { transform: rotate(90deg); }
+
+        /* Drill-down */
+        .audit-drill-row { display: none; }
+        .audit-drill-row.show { display: table-row; }
+        .audit-drill-cell { padding: 0 !important; background: var(--bg-primary); }
+        .audit-drill-inner {
+            padding: 10px 24px 10px 36px;
+            border-left: 2px solid var(--accent-navy);
+            background: var(--bg-primary);
+        }
+        .audit-drill-inner thead { display: none; }
+        .audit-drill-inner table { width: 100%; border-collapse: collapse; font-size: 0.81rem; }
+        .audit-drill-inner tbody td {
+            padding: 5px 10px; border-bottom: 1px solid var(--border);
+            color: var(--text-secondary); padding-left: 20px;
+        }
+        .audit-drill-inner tbody tr:last-child td { border-bottom: none; }
+
+        /* View 2 Compare filters */
+        .compare-filters {
+            display: flex; gap: 20px; flex-wrap: wrap;
+            background: var(--bg-surface); border: 0.5px solid var(--border);
+            border-radius: 8px; padding: 14px 18px; margin-bottom: 16px;
+        }
+        .compare-filter-group { flex: 1; min-width: 200px; }
+        .compare-filter-group > label {
+            font-weight: 600; font-size: 0.82rem;
+            color: var(--text-secondary); display: block; margin-bottom: 6px;
+        }
+        .batch-checkbox-list {
+            display: flex; flex-direction: column; gap: 5px;
+            max-height: 180px; overflow-y: auto;
+            background: var(--bg-surface); border: 0.5px solid var(--border);
+            border-radius: 5px; padding: 8px 10px;
+        }
+        .batch-checkbox-list:focus-within { border-color: var(--border-focus); }
+        .batch-checkbox-list label {
+            display: flex; align-items: center; gap: 7px;
+            font-weight: 400; font-size: 0.81rem;
+            color: var(--text-primary); cursor: pointer;
+        }
+        .batch-checkbox-list input[type="checkbox"] { cursor: pointer; accent-color: var(--accent-navy); }
+        .compare-btn {
+            align-self: flex-end; background: var(--accent-navy); color: #fff;
+            border: none; border-radius: 6px; padding: 9px 22px;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: opacity .2s; margin-top: auto;
+        }
+        .compare-btn:hover { opacity: .88; }
+
+        /* Compare table */
+        .compare-table-wrap { overflow-x: auto; }
+        .compare-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+        .compare-table thead th {
+            background: var(--bg-elevated); color: var(--text-secondary);
+            padding: 8px 12px; text-align: left; white-space: nowrap;
+            border-bottom: 2px solid var(--border); font-weight: 600; font-size: 0.78rem;
+        }
+        .compare-table thead th.batch-header {
+            background: var(--accent-navy); color: #fff; text-align: center;
+        }
+        .compare-table tbody tr { border-bottom: 1px solid var(--border); }
+        .compare-table tbody tr:nth-child(even) { background: var(--bg-elevated); }
+        .compare-table tbody tr:hover { background: #EFF6FF; }
+        .compare-table td { padding: 7px 12px; color: var(--text-primary); }
+        .compare-table td.metric-label { font-weight: 600; color: var(--text-secondary); }
+        .compare-table td.num { text-align: right; }
+        .compare-table td.pct { text-align: right; color: var(--accent-teal); font-weight: 600; }
+
+        /* No-data / placeholder */
+        .no-data-msg {
+            text-align: center; color: var(--text-muted); font-size: 0.88rem;
+            padding: 30px; background: var(--bg-elevated); border-radius: 8px;
+            border: 1px dashed var(--border);
+        }
+        .content-placeholder { padding: 40px 20px; }
+        .content-placeholder p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* ════ CVA Market Landscape ════ */
+
+        /* KPI strip */
+        .cva-kpi-strip {
+            display: flex; flex-wrap: wrap; gap: 10px;
+            background: var(--bg-elevated); border: 0.5px solid var(--border);
+            border-radius: 10px; padding: 14px 18px;
+            margin-bottom: 18px; align-items: stretch;
+        }
+        .cva-kpi {
+            display: flex; flex-direction: column; align-items: center;
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-top: 2px solid var(--accent-navy);
+            border-radius: 8px; padding: 10px 18px;
+            flex: 1 1 120px; text-align: center;
+        }
+        .cva-kpi-val { font-size: 1.2rem; font-weight: 500; color: var(--text-primary); }
+        .cva-kpi-lbl { font-size: 0.7rem; color: var(--text-secondary); margin-top: 3px; }
+        .cva-kpi-split { flex: 2 1 220px; align-items: flex-start; }
+        .cva-scale-mini { width: 100%; border-collapse: collapse; font-size: 0.77rem; margin-top: 4px; }
+        .cva-scale-mini th { color: var(--text-secondary); font-weight: 600; padding: 2px 6px; text-align: right; }
+        .cva-scale-mini th:first-child { text-align: left; }
+        .cva-scale-mini td { padding: 2px 6px; text-align: right; color: var(--text-primary); font-weight: 600; }
+        .cva-scale-mini td:first-child { text-align: left; color: var(--text-secondary); font-weight: 400; }
+
+        /* Layouts */
+        .cva-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        .cva-three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        @media (max-width: 900px) { .cva-two-col, .cva-three-col { grid-template-columns: 1fr; } }
+
+        /* Panels */
+        .cva-panel {
+            background: var(--bg-surface); border: 0.5px solid var(--border);
+            border-radius: 8px; padding: 12px 14px;
+        }
+        .cva-panel-title {
+            font-size: 0.76rem; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 8px; padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cva-panel-sub { font-size: 0.68rem; font-weight: 400; color: var(--text-muted); text-transform: none; margin-left: 6px; }
+        .cva-note { font-size: 0.72rem; color: var(--text-muted); margin: 0 0 8px; line-height: 1.5; }
+
+        /* Shared table */
+        .cva-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .cva-table thead th {
+            background: var(--bg-elevated); color: var(--text-secondary);
+            padding: 5px 8px; text-align: left; white-space: nowrap;
+            border-bottom: 2px solid var(--border); font-weight: 600; font-size: 0.74rem;
+        }
+        .cva-table thead th.r { text-align: right; }
+        .cva-table tbody tr:nth-child(even) { background: var(--bg-elevated); }
+        .cva-table tbody tr:hover { background: #EFF6FF; }
+        .cva-table tbody td { padding: 4px 8px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+        .cva-table tbody tr:last-child td { border-bottom: none; }
+        .cva-table tfoot td {
+            padding: 5px 8px; background: var(--bg-elevated);
+            font-weight: 700; border-top: 1.5px solid var(--border);
+            color: var(--text-primary);
+        }
+        .cva-table td.r, .cva-table th.r { text-align: right; }
+        .cva-table td.pct { color: var(--accent-navy); font-weight: 600; }
+        .cva-table td.grn { color: var(--accent-teal); font-weight: 600; }
+        .cva-table td.dim { color: var(--text-muted); }
+
+        /* Error sub-box */
+        .cva-error-box {
+            background: #FFF7ED; border: 0.5px solid #FED7AA;
+            border-radius: 6px; padding: 7px 10px;
+        }
+        .cva-error-title { font-size: 0.7rem; font-weight: 700; color: var(--accent-amber); margin-bottom: 5px; }
+
+        /* Segment tabs */
+        .cva-seg-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 20px 0 0;
+        }
+        .cva-seg-title { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; }
+        .cva-seg-tabs {
+            display: flex; gap: 2px; background: var(--bg-elevated);
+            border-radius: 8px; padding: 4px; border: 0.5px solid var(--border);
+        }
+        .cva-tab {
+            background: none; border: none; cursor: pointer;
+            padding: 6px 18px; border-radius: 6px;
+            font-size: 0.8rem; font-weight: 500; color: var(--text-secondary);
+            transition: background .15s, color .15s;
+        }
+        .cva-tab:hover { background: #DBEAFE; color: var(--accent-navy); }
+        .cva-tab.active {
+            background: var(--accent-navy); color: #fff; font-weight: 600;
+        }
+
+        /* Segment panes */
+        .cva-seg-pane { display: none; padding-top: 14px; }
+        .cva-seg-pane.active { display: block; }
+        .cva-seg-kpi-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+        .cva-seg-kpi {
+            background: var(--bg-surface);
+            border: 0.5px solid var(--border);
+            border-top: 2px solid var(--accent-navy);
+            border-radius: 8px; padding: 8px 16px;
+            font-size: 0.74rem; color: var(--text-secondary);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .cva-seg-kpi span { font-size: 1rem; font-weight: 500; color: var(--text-primary); }
+        .cva-mini-pair { display: flex; flex-direction: column; gap: 8px; }
+
+        /* ════ Print ════ */
+        @media print {
+            * { background: #fff !important; color: #0F172A !important; }
+            .topbar, .sidebar, .nf-upload-icon-wrap, .compare-btn,
+            .cva-seg-tabs, .sidebar-toggle { display: none !important; }
+            .tabs-section { margin-left: 0 !important; }
+            .content-pane { display: block !important; page-break-after: always; }
+            .cva-table thead th { background: #E2E8F0 !important; }
+            border { border-color: #E2E8F0 !important; }
+        }
+</style>
+</head>
+<body>
+    <!-- Top Navigation Bar - redesigned -->
+    <nav class="topbar" id="mainTopbar">
+        <div class="topbar-row1">
+            <!-- Left: hamburger + EXL logo + date -->
+            <div class="topbar-left-group">
+                <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="topbar-exl-block">
+                    <img src="exl_logo.png" alt="EXL" class="logo">
+                    <span class="topbar-date">13th May 2026</span>
+                </div>
+            </div>
+            <!-- Centre: main title -->
+            <div class="topbar-centre">
+                <h1 class="topbar-title">PI Analytics &ndash; DRG Program Stories</h1>
+            </div>
+            <!-- Right: client logo -->
+            <div class="topbar-right">
+                <img src="client_logo.png" alt="Client" class="client-logo-img">
+            </div>
+        </div>
+        <div class="topbar-row2">
+            <span id="sectionSubtitleText">CVA Market landscape</span>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-menu">
+            <div class="menu-item active" onclick="selectMenuItem(this, 'cva-landscape')">
+                <span class="menu-icon">📊</span>
+                <span class="menu-label">CVA Market landscape</span>
+            </div>
+            <div class="menu-item" onclick="selectMenuItem(this, 'cva-initiatives')">
+                <span class="menu-icon">📋</span>
+                <span class="menu-label">CVA Model initiatives Summary</span>
+            </div>
+            <div class="menu-item" onclick="selectMenuItem(this, 'trans-nf-reval')">
+                <span class="menu-icon">🔄</span>
+                <span class="menu-label">Transformational - NF Reval batches</span>
+            </div>
+            <div class="menu-item" onclick="selectMenuItem(this, 'trans-provider')">
+                <span class="menu-icon">🏥</span>
+                <span class="menu-label">Transformational - Provider Exclusivity</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="page-container">
+        <!-- Filter Panel -->
+        <section class="filter-panel"></section>
+
+        <!-- KPI Cards Section -->
+        <section class="kpi-section"></section>
+
+        <!-- Content Section -->
+        <section class="tabs-section">
+
+            <!-- ════════════════════════════════════════ -->
+            <!--  CVA Market Landscape (unchanged)        -->
+            <!-- ════════════════════════════════════════ -->
+            <div id="cva-landscape" class="content-pane active">
+                <section class="content-section">
+
+                    <!-- ── OVERVIEW KPI STRIP ── -->
+                    <div class="cva-kpi-strip">
+                        <div class="cva-kpi"><span class="cva-kpi-val">824,056</span><span class="cva-kpi-lbl">Claim Volume</span></div>
+                        <div class="cva-kpi"><span class="cva-kpi-val">4,025</span><span class="cva-kpi-lbl">Distinct Providers</span></div>
+                        <div class="cva-kpi"><span class="cva-kpi-val">31,694</span><span class="cva-kpi-lbl">Avg Claims / Month</span></div>
+                        <div class="cva-kpi"><span class="cva-kpi-val">202401–202602</span><span class="cva-kpi-lbl">Time Range (26 months)</span></div>
+                        <div class="cva-kpi cva-kpi-split">
+                            <span class="cva-kpi-lbl" style="margin-bottom:4px;">Financial Scale</span>
+                            <table class="cva-scale-mini">
+                                <thead><tr><th></th><th>MSDRG</th><th>DRGCL</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Overall</td><td>$607.28M</td><td>$1,011.14M</td></tr>
+                                    <tr><td>Top 12</td><td>$65.37M</td><td>$700.19M</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ── TWO-COLUMN: DRG Table + Funnel Table ── -->
+                    <div class="cva-two-col">
+                        <div class="cva-panel">
+                            <div class="cva-panel-title">Top 12 DRGs <span class="cva-panel-sub">202401–202602</span></div>
+                            <table class="cva-table">
+                                <thead>
+                                    <tr><th>DRG</th><th class="r">Claims</th><th class="r">Spend $B</th><th class="r">Savings $M</th><th class="r">Rec/Spend%</th><th class="r">Providers</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>871</td><td class="r">284,013</td><td class="r">3.45</td><td class="r">392.54</td><td class="r pct">11%</td><td class="r">3,233</td></tr>
+                                    <tr><td>193</td><td class="r">86,769</td><td class="r">0.71</td><td class="r">41.03</td><td class="r pct">6%</td><td class="r">3,056</td></tr>
+                                    <tr><td>189</td><td class="r">66,044</td><td class="r">0.54</td><td class="r">13.99</td><td class="r pct">3%</td><td class="r">3,107</td></tr>
+                                    <tr><td>177</td><td class="r">58,255</td><td class="r">0.58</td><td class="r">31.04</td><td class="r pct">5%</td><td class="r">2,900</td></tr>
+                                    <tr><td>280</td><td class="r">56,519</td><td class="r">0.55</td><td class="r">32.70</td><td class="r pct">6%</td><td class="r">2,347</td></tr>
+                                    <tr><td>872</td><td class="r">52,440</td><td class="r">0.32</td><td class="r">22.45</td><td class="r pct">7%</td><td class="r">2,869</td></tr>
+                                    <tr><td>853</td><td class="r">49,171</td><td class="r">1.52</td><td class="r">106.09</td><td class="r pct">7%</td><td class="r">2,109</td></tr>
+                                    <tr><td>682</td><td class="r">46,504</td><td class="r">0.40</td><td class="r">20.47</td><td class="r pct">5%</td><td class="r">2,508</td></tr>
+                                    <tr><td>190</td><td class="r">45,124</td><td class="r">0.30</td><td class="r">12.02</td><td class="r pct">4%</td><td class="r">2,771</td></tr>
+                                    <tr><td>064</td><td class="r">41,040</td><td class="r">0.51</td><td class="r">28.16</td><td class="r pct">6%</td><td class="r">2,165</td></tr>
+                                    <tr><td>308</td><td class="r">25,530</td><td class="r">0.19</td><td class="r">6.56</td><td class="r pct">4%</td><td class="r">2,240</td></tr>
+                                    <tr><td>854</td><td class="r">12,647</td><td class="r">0.16</td><td class="r">13.80</td><td class="r pct">9%</td><td class="r">1,715</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="cva-panel">
+                            <div class="cva-panel-title">Provider Funnel by Strategy</div>
+                            <table class="cva-table">
+                                <thead>
+                                    <tr><th>Funnel Bucket</th><th class="r">Providers</th><th class="r">% Prov.</th><th class="r">Claims</th><th class="r">Claim%</th><th class="r">Spend $B</th><th class="r">Savings $M</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Completely Untargeted</td><td class="r">1,008</td><td class="r">25.0%</td><td class="r">36,901</td><td class="r">4%</td><td class="r">0.45</td><td class="r dim">—</td></tr>
+                                    <tr><td>Mostly OV</td><td class="r">617</td><td class="r">15.3%</td><td class="r">101,912</td><td class="r">12%</td><td class="r">1.15</td><td class="r grn">5.87</td></tr>
+                                    <tr><td>Mostly NAS</td><td class="r">98</td><td class="r">2.4%</td><td class="r">31,503</td><td class="r">4%</td><td class="r">0.37</td><td class="r grn">2.04</td></tr>
+                                    <tr><td>All Vendor Exclusive</td><td class="r">2,302</td><td class="r">57.2%</td><td class="r">653,740</td><td class="r">79%</td><td class="r">7.25</td><td class="r grn">757.65</td></tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr><td><strong>Total</strong></td><td class="r"><strong>4,025</strong></td><td class="r"><strong>100%</strong></td><td class="r"><strong>824,056</strong></td><td class="r"><strong>100%</strong></td><td class="r"><strong>9.23</strong></td><td class="r grn"><strong>765.56</strong></td></tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ── SEGMENT TABS: A / B / C / D ── -->
+                    <div class="cva-seg-header">
+                        <div class="cva-seg-title">Provider Segments</div>
+                        <div class="cva-seg-tabs">
+                            <button class="cva-tab active" onclick="selectCvaTab(this,'seg-a')">A · Untargeted</button>
+                            <button class="cva-tab" onclick="selectCvaTab(this,'seg-b')">B · Mostly OV</button>
+                            <button class="cva-tab" onclick="selectCvaTab(this,'seg-c')">C · Mostly NAS</button>
+                            <button class="cva-tab" onclick="selectCvaTab(this,'seg-d')">D · All Vendor</button>
+                        </div>
+                    </div>
+
+                    <!-- ═══ SEGMENT A ═══ -->
+                    <div id="seg-a" class="cva-seg-pane active">
+                        <div class="cva-seg-kpi-row">
+                            <div class="cva-seg-kpi"><span>1,008</span>Providers</div>
+                            <div class="cva-seg-kpi"><span>36,901</span>Claims</div>
+                            <div class="cva-seg-kpi"><span>$0.452B</span>Spend</div>
+                        </div>
+                        <div class="cva-three-col">
+                            <!-- Category mix -->
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Category Mix</div>
+                                <table class="cva-table">
+                                    <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th><th class="r">Spend $B</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>GEN_EXL</td><td class="r">16,628</td><td class="r">45%</td><td class="r">0.144</td></tr>
+                                        <tr><td>CLIENT_EXL</td><td class="r">7,231</td><td class="r">20%</td><td class="r">0.116</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td class="r">9,121</td><td class="r">25%</td><td class="r">0.130</td></tr>
+                                        <tr><td>CAT_OTHER_SEL</td><td class="r">1,373</td><td class="r">4%</td><td class="r">0.023</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td class="r">1,316</td><td class="r">4%</td><td class="r">0.021</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td class="r">896</td><td class="r">2%</td><td class="r">0.013</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td class="r">336</td><td class="r">1%</td><td class="r">0.005</td></tr>
+                                    </tbody>
+                                    <tfoot><tr><td>Total</td><td class="r">36,901</td><td class="r">100%</td><td class="r">0.452</td></tr></tfoot>
+                                </table>
+                            </div>
+                            <!-- Prepay -->
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Prepay</div>
+                                <p class="cva-note">Vol: 3,151 | 290 TINs | Not found: 718 | Avg: 121/mo<br>GEN_EXL: 1,022 (32.4%) | Selectable: 2,129 (67.6%)</p>
+                                <div class="cva-mini-pair">
+                                    <table class="cva-table">
+                                        <thead><tr><th>Metric</th><th class="r">Top12</th><th class="r">Other</th><th class="r">Overall</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>Total</td><td class="r">1,011</td><td class="r">2,140</td><td class="r">3,151</td></tr>
+                                            <tr><td>Final Sel</td><td class="r">516</td><td class="r">250</td><td class="r">766</td></tr>
+                                            <tr><td>Moat App</td><td class="r">8</td><td class="r">6</td><td class="r">14</td></tr>
+                                            <tr><td>Find</td><td class="r">0</td><td class="r">0</td><td class="r">0</td></tr>
+                                            <tr><td>Nofind</td><td class="r">0</td><td class="r">0</td><td class="r">0</td></tr>
+                                            <tr><td>Cancelled</td><td class="r">4</td><td class="r">4</td><td class="r">8</td></tr>
+                                        </tbody>
+                                    </table>
+                                    <table class="cva-table" style="margin-top:8px">
+                                        <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>CLIENT_EXL</td><td class="r">5,244</td><td class="r">72%</td></tr>
+                                            <tr><td>GEN_EXL</td><td class="r">1,136</td><td class="r">16%</td></tr>
+                                            <tr><td>CAT_AUTO_EXL</td><td class="r">676</td><td class="r">9%</td></tr>
+                                            <tr><td>Q_OTHER</td><td class="r">98</td><td class="r">1%</td></tr>
+                                            <tr><td>CAT_MANUAL_SEL</td><td class="r">94</td><td class="r">1%</td></tr>
+                                            <tr><td>CAT_AUTO_SEL</td><td class="r">66</td><td class="r">1%</td></tr>
+                                            <tr><td>CAT_CVA_SEL</td><td class="r">9</td><td class="r">0%</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cva-error-box">
+                                    <div class="cva-error-title">Errors (1,202)</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Provider/Group on hold</td><td class="r">1,062</td></tr>
+                                            <tr><td>Not Assigned</td><td class="r">135</td></tr>
+                                            <tr><td>Selected by Internal ICT</td><td class="r">3</td></tr>
+                                            <tr><td>Prepay Vol Limit Exceeded</td><td class="r">1</td></tr>
+                                            <tr><td>Invalid Claim Status</td><td class="r">1</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cva-error-box" style="margin-top:6px">
+                                    <div class="cva-error-title">Gen Excl. Reasons</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Q_EXL_3000 | Q_EXL_2K_TO_3K</td><td class="r">1</td></tr>
+                                            <tr><td>Q_EXL_885</td><td class="r">1</td></tr>
+                                            <tr><td>Q_EXL_ZERO_CCMCC_HUM_DA</td><td class="r">7</td></tr>
+                                            <tr><td>Q_EXL_REHAB|Q_EXL_ZERO_CCMCC_HUM_DA_CU2</td><td class="r">54</td></tr>
+                                            <tr><td>Q_EXL_DRG_PDX_MCC_COMB_EXCLUSION</td><td class="r">7</td></tr>
+                                            <tr><td>Q_EXL_3000</td><td class="r">6</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- Postpay -->
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Postpay</div>
+                                <p class="cva-note">Vol: 71,960 | 239 TINs (61 Active) | Not found: 769 | Avg: 2,768/mo<br>GEN_EXL: 30,406 (42.5%) | Client: 18,324 | Exl: 12,282</p>
+                                <table class="cva-table">
+                                    <thead><tr><th>Metric</th><th class="r">Top12</th><th class="r">Other</th><th class="r">Overall</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Total</td><td class="r">15,656</td><td class="r">56,304</td><td class="r">71,960</td></tr>
+                                        <tr><td>Final Sel</td><td class="r">5,884</td><td class="r">9,989</td><td class="r">16,873</td></tr>
+                                        <tr><td>Moat App</td><td class="r">0</td><td class="r">0</td><td class="r">16,860</td></tr>
+                                        <tr><td>Find</td><td class="r">0</td><td class="r">0</td><td class="r">0</td></tr>
+                                        <tr><td>Nofind</td><td class="r">0</td><td class="r">0</td><td class="r">0</td></tr>
+                                        <tr><td>Cancelled</td><td class="r">0</td><td class="r">3</td><td class="r">3</td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="cva-error-box" style="margin-top:8px">
+                                    <div class="cva-error-title">Errors</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Provider/Group on hold</td><td class="r">16,246</td></tr>
+                                            <tr><td>Not Assigned</td><td class="r">13</td></tr>
+                                            <tr><td>Invalid Claim Status</td><td class="r">1</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cva-error-box" style="margin-top:6px">
+                                    <div class="cva-error-title">Gen Excl. Reasons</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>DRG_EXL_35861_Low</td><td class="r">2,617</td></tr>
+                                            <tr><td>Q_Exl_39</td><td class="r">1,379</td></tr>
+                                            <tr><td>DRG_EXL_35861_Low_conversion</td><td class="r">828</td></tr>
+                                            <tr><td>DRG_EXL_35861_Low_conversion_p</td><td class="r">785</td></tr>
+                                            <tr><td>Q_EXL_ZERO_CCMCC_H</td><td class="r">679</td></tr>
+                                            <tr><td>Q_EXL_pdx_mcc</td><td class="r">670</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ SEGMENT B ═══ -->
+                    <div id="seg-b" class="cva-seg-pane">
+                        <div class="cva-seg-kpi-row">
+                            <div class="cva-seg-kpi"><span>617</span>Providers</div>
+                            <div class="cva-seg-kpi"><span>101,942</span>Claims</div>
+                            <div class="cva-seg-kpi"><span>$1.154B</span>Spend</div>
+                        </div>
+                        <div class="cva-three-col">
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Category Mix</div>
+                                <table class="cva-table">
+                                    <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th><th class="r">Spend $B</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>GEN_EXL</td><td class="r">59,969</td><td class="r">59%</td><td class="r">0.596</td></tr>
+                                        <tr><td>CLIENT_EXL</td><td class="r">25,366</td><td class="r">25%</td><td class="r">0.301</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td class="r">11,483</td><td class="r">11%</td><td class="r">0.171</td></tr>
+                                        <tr><td>CAT_OTHER_SEL</td><td class="r">1,910</td><td class="r">2%</td><td class="r">0.033</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td class="r">1,807</td><td class="r">2%</td><td class="r">0.030</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td class="r">1,033</td><td class="r">1%</td><td class="r">0.015</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td class="r">344</td><td class="r">0%</td><td class="r">0.004</td></tr>
+                                    </tbody>
+                                    <tfoot><tr><td>Total</td><td class="r">101,912</td><td class="r">100%</td><td class="r">1.150</td></tr></tfoot>
+                                </table>
+                                <div style="margin-top:10px">
+                                    <div class="cva-panel-title" style="font-size:0.78rem">Vendor Coverage</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>Type</th><th class="r">Claims</th><th class="r">Spend $B</th><th class="r">Savings $M</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>Unselected</td><td class="r">99,885</td><td class="r">1.127</td><td class="r dim">—</td></tr>
+                                            <tr><td>Below Vendor</td><td class="r">1,523</td><td class="r">0.019</td><td class="r grn">5.43</td></tr>
+                                            <tr><td>ICT</td><td class="r">504</td><td class="r">0.005</td><td class="r grn">0.43</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Prepay</div>
+                                <p class="cva-note">Initial: 8,563 | Final Sel: 1,240 | MOAT: 35 | Cancelled: 12 | Finding: 0 | No Finding: 0 | GAP: 7,323</p>
+                                <table class="cva-table">
+                                    <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>CLIENT_EXL</td><td class="r">5,244</td><td class="r">72%</td></tr>
+                                        <tr><td>GEN_EXL</td><td class="r">1,136</td><td class="r">16%</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td class="r">676</td><td class="r">9%</td></tr>
+                                        <tr><td>Q_OTHER</td><td class="r">98</td><td class="r">1%</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td class="r">94</td><td class="r">1%</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td class="r">66</td><td class="r">1%</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td class="r">9</td><td class="r">0%</td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="cva-error-box" style="margin-top:8px">
+                                    <div class="cva-error-title">Errors (1,202)</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Provider/Group on hold</td><td class="r">1,062</td></tr>
+                                            <tr><td>Not Assigned</td><td class="r">135</td></tr>
+                                            <tr><td>Selected by Internal ICT</td><td class="r">3</td></tr>
+                                            <tr><td>Prepay Vol Limit Exceeded</td><td class="r">1</td></tr>
+                                            <tr><td>Invalid Claim Status</td><td class="r">1</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cva-error-box" style="margin-top:6px">
+                                    <div class="cva-error-title">Gen Excl. Reasons</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Q_EXL_REHAB</td><td class="r">520</td></tr>
+                                            <tr><td>Q_EXL_885</td><td class="r">216</td></tr>
+                                            <tr><td>Q_EXL_ZERO_CCMCC_HUM_DA</td><td class="r">73</td></tr>
+                                            <tr><td>Q_EXL_REHAB|Q_EXL_ZERO_CCMCC_HUM_DA_CU2</td><td class="r">54</td></tr>
+                                            <tr><td>Q_EXL_3000|Q_EXL_2K_TO_3K</td><td class="r">44</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Postpay</div>
+                                <p class="cva-note">Initial: 331,202 | Final Sel: 34,035 | MOAT: 388 | Cancelled: 89 | Finding: 0 | No Finding: 0 | GAP: 297,167</p>
+                                <table class="cva-table">
+                                    <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>CLIENT_EXL</td><td class="r">235,944</td><td class="r">79%</td></tr>
+                                        <tr><td>GEN_EXL</td><td class="r">21,353</td><td class="r">7%</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td class="r">33,318</td><td class="r">11%</td></tr>
+                                        <tr><td>Q_OTHER</td><td class="r">4,487</td><td class="r">2%</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td class="r">863</td><td class="r">0%</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td class="r">630</td><td class="r">0%</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td class="r">572</td><td class="r">0%</td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="cva-error-box" style="margin-top:8px">
+                                    <div class="cva-error-title">Errors (300)</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Provider/Group on hold</td><td class="r">29,944</td></tr>
+                                            <tr><td>Not Assigned</td><td class="r">117</td></tr>
+                                            <tr><td>Invalid Claim Status</td><td class="r">30</td></tr>
+                                            <tr><td>Unauthorized</td><td class="r">2</td></tr>
+                                            <tr><td>Claim open/audited under diff</td><td class="r">2</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cva-error-box" style="margin-top:6px">
+                                    <div class="cva-error-title">Gen Excl. Reasons</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Q_EXL_3000|Q_MSSEL_MODE</td><td class="r">2,354</td></tr>
+                                            <tr><td>Low_conversion_pvt|Q_0</td><td class="r">2,337</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ SEGMENT C ═══ -->
+                    <div id="seg-c" class="cva-seg-pane">
+                        <div class="cva-seg-kpi-row">
+                            <div class="cva-seg-kpi"><span>98</span>Providers</div>
+                            <div class="cva-seg-kpi"><span>31,503</span>Claims</div>
+                            <div class="cva-seg-kpi"><span>$0.372B</span>Spend</div>
+                            <div class="cva-seg-kpi"><span>NAS: 878 (2.8%)</span>Selects | Unselected: 30,479 (96.7%)</div>
+                        </div>
+                        <div class="cva-three-col">
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Category Mix</div>
+                                <table class="cva-table">
+                                    <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th><th class="r">Spend $B</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>GEN_EXL</td><td class="r">17,681</td><td class="r">56%</td><td class="r">0.189</td></tr>
+                                        <tr><td>CLIENT_EXL</td><td class="r">1,299</td><td class="r">4%</td><td class="r">0.015</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td class="r">8,022</td><td class="r">25%</td><td class="r">0.108</td></tr>
+                                        <tr><td>CAT_OTHER_SEL</td><td class="r">1,753</td><td class="r">6%</td><td class="r">0.026</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td class="r">1,347</td><td class="r">4%</td><td class="r">0.017</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td class="r">1,150</td><td class="r">4%</td><td class="r">0.015</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td class="r">251</td><td class="r">1%</td><td class="r">0.002</td></tr>
+                                    </tbody>
+                                    <tfoot><tr><td>Total</td><td class="r">31,503</td><td class="r">100%</td><td class="r">0.372</td></tr></tfoot>
+                                </table>
+                            </div>
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Prepay</div>
+                                <p class="cva-note">51 TINs (4–16/M) | Avg: 168/mo<br>Initial: 4,271 | Final Sel: 2,499 | MOAT: 66 | Cancelled: 2 | Finding: 14 | No Finding: 40 | GAP: 1,872 | Drop-off: 2,433</p>
+                                <table class="cva-table">
+                                    <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>CAT_AUTO_EXL</td><td class="r">903</td><td class="r">50%</td></tr>
+                                        <tr><td>GEN_EXL</td><td class="r">550</td><td class="r">29%</td></tr>
+                                        <tr><td>CLIENT_EXL</td><td class="r">132</td><td class="r">7%</td></tr>
+                                        <tr><td>Q_OTHER</td><td class="r">160</td><td class="r">9%</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td class="r">84</td><td class="r">4%</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td class="r">8</td><td class="r">0%</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td class="r">5</td><td class="r">0%</td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="cva-error-box" style="margin-top:8px">
+                                    <div class="cva-error-title">Errors (2,422)</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Provider/Group on hold</td><td class="r">2,389</td></tr>
+                                            <tr><td>Not Assigned</td><td class="r">26</td></tr>
+                                            <tr><td>Selected by Internal ICT</td><td class="r">4</td></tr>
+                                            <tr><td>Claim open/audited under diff</td><td class="r">1</td></tr>
+                                            <tr><td>Prepay Vol Limit Exceeded</td><td class="r">1</td></tr>
+                                            <tr><td>Invalid Claim Status</td><td class="r">1</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cva-error-box" style="margin-top:6px">
+                                    <div class="cva-error-title">Top TINs</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>ProviderTaxID</th><th class="r">Months</th><th class="r">Avg/Mo</th><th class="r">Total</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>362169147</td><td class="r">26</td><td class="r">133.5</td><td class="r">3,470</td></tr>
+                                            <tr><td>362167920</td><td class="r">26</td><td class="r">15.4</td><td class="r">400</td></tr>
+                                            <tr><td>363196629</td><td class="r">26</td><td class="r">10.2</td><td class="r">265</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="cva-panel">
+                                <div class="cva-panel-title">Postpay</div>
+                                <p class="cva-note">93 TINs (52–63/M) | Avg: 2,244/mo<br>Initial: 84,356 | Final Sel: 11,655 | MOAT: 3,931 | Cancelled: 2,628 | Finding: 10 | No Finding: 26 | GAP: 72,701 | Drop-off: 7,324</p>
+                                <table class="cva-table">
+                                    <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>CLIENT_EXL</td><td class="r">43,345</td><td class="r">60%</td></tr>
+                                        <tr><td>GEN_EXL</td><td class="r">7,115</td><td class="r">10%</td></tr>
+                                        <tr><td>CAT_AUTO_EXL</td><td class="r">16,713</td><td class="r">23%</td></tr>
+                                        <tr><td>Q_OTHER</td><td class="r">4,088</td><td class="r">6%</td></tr>
+                                        <tr><td>CAT_AUTO_SEL</td><td class="r">618</td><td class="r">1%</td></tr>
+                                        <tr><td>CAT_CVA_SEL</td><td class="r">574</td><td class="r">1%</td></tr>
+                                        <tr><td>CAT_MANUAL_SEL</td><td class="r">248</td><td class="r">0%</td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="cva-error-box" style="margin-top:8px">
+                                    <div class="cva-error-title">Errors (6,084)</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Provider/Group on hold</td><td class="r">5,752</td></tr>
+                                            <tr><td>Not Assigned</td><td class="r">181</td></tr>
+                                            <tr><td>Invalid Claim Status</td><td class="r">148</td></tr>
+                                            <tr><td>Claim open/audited under diff</td><td class="r">3</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cva-error-box" style="margin-top:6px">
+                                    <div class="cva-error-title">Standard Status</div>
+                                    <table class="cva-table">
+                                        <tbody>
+                                            <tr><td>Cancelled</td><td class="r">2,638</td></tr>
+                                            <tr><td>Selection Completed</td><td class="r">1,214</td></tr>
+                                            <tr><td>Completed – initial NO Finding</td><td class="r">24</td></tr>
+                                            <tr><td>Ready to Send Selection to Client</td><td class="r">13</td></tr>
+                                            <tr><td>Ready for Nurse</td><td class="r">11</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ SEGMENT D ═══ -->
+                    <div id="seg-d" class="cva-seg-pane">
+                        <div class="cva-seg-kpi-row">
+                            <div class="cva-seg-kpi"><span>2,302</span>Providers</div>
+                            <div class="cva-seg-kpi"><span>653,740</span>Claims</div>
+                            <div class="cva-seg-kpi"><span>$7.25B</span>Spend</div>
+                        </div>
+                        <div class="cva-two-col">
+                            <!-- Left col -->
+                            <div>
+                                <div class="cva-panel">
+                                    <div class="cva-panel-title">Vendor Breakdown</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>Vendor</th><th class="r">Claims</th><th class="r">Spend $B</th><th class="r">Savings $M</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>Unaudited</td><td class="r">336,132</td><td class="r">3.265</td><td class="r dim">0</td></tr>
+                                            <tr><td>ICT</td><td class="r">144,816</td><td class="r">1.824</td><td class="r grn">481.08</td></tr>
+                                            <tr><td>NAS</td><td class="r">114,361</td><td class="r">1.486</td><td class="r grn">225.02</td></tr>
+                                            <tr><td>Below Vendor</td><td class="r">58,431</td><td class="r">0.675</td><td class="r grn">51.55</td></tr>
+                                        </tbody>
+                                        <tfoot><tr><td>Total</td><td class="r">653,740</td><td class="r">7.25</td><td class="r grn">757.65</td></tr></tfoot>
+                                    </table>
+                                </div>
+                                <div class="cva-panel" style="margin-top:10px">
+                                    <div class="cva-panel-title">Category Mix</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th><th class="r">Spend $B</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>GEN_EXL</td><td class="r">121,937</td><td class="r">36%</td><td class="r">0.257</td></tr>
+                                            <tr><td>CLIENT_EXL</td><td class="r">6,182</td><td class="r">2%</td><td class="r">0.070</td></tr>
+                                            <tr><td>CAT_CVA_SEL</td><td class="r">108,158</td><td class="r">32%</td><td class="r">1.544</td></tr>
+                                            <tr><td>CAT_OTHER_SEL</td><td class="r">44,381</td><td class="r">13%</td><td class="r">0.690</td></tr>
+                                            <tr><td>CAT_AUTO_EXL</td><td class="r">35,810</td><td class="r">11%</td><td class="r">0.442</td></tr>
+                                            <tr><td>CAT_AUTO_SEL</td><td class="r">16,665</td><td class="r">5%</td><td class="r">0.232</td></tr>
+                                            <tr><td>CAT_MANUAL_SEL</td><td class="r">2,999</td><td class="r">1%</td><td class="r">0.031</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cva-panel" style="margin-top:10px">
+                                    <div class="cva-panel-title">Flow Summary</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>Flow</th><th class="r">Total</th><th class="r">Gen Exl</th><th class="r">Potential</th><th class="r">Final Sel</th><th class="r">Moat</th><th class="r">Cancelled</th><th class="r">GAP</th><th class="r">Err Out</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>Prepay</td><td class="r">1,391,204</td><td class="r">292,411</td><td class="r">1,098,793</td><td class="r">510,824</td><td class="r">157,663</td><td class="r">4,452</td><td class="r">587,969</td><td class="r">353,161</td></tr>
+                                            <tr><td>Postpay</td><td class="r">1,485,517</td><td class="r">451,976</td><td class="r">1,033,541</td><td class="r">236,730</td><td class="r">163,579</td><td class="r">30,555</td><td class="r">796,811</td><td class="r">73,151</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- Right col -->
+                            <div>
+                                <div class="cva-panel">
+                                    <div class="cva-panel-title">Prepay GAP Categories</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>CAT_AUTO_EXL</td><td class="r">433,450</td><td class="r">74%</td></tr>
+                                            <tr><td>Q_OTHER</td><td class="r">105,303</td><td class="r">18%</td></tr>
+                                            <tr><td>CAT_MANUAL_SEL</td><td class="r">26,393</td><td class="r">4%</td></tr>
+                                            <tr><td>CAT_AUTO_SEL</td><td class="r">19,244</td><td class="r">3%</td></tr>
+                                            <tr><td>CAT_CVA_SEL</td><td class="r">3,579</td><td class="r">1%</td></tr>
+                                        </tbody>
+                                        <tfoot><tr><td>Grand Total</td><td class="r">587,969</td><td class="r">100%</td></tr></tfoot>
+                                    </table>
+                                </div>
+                                <div class="cva-panel" style="margin-top:10px">
+                                    <div class="cva-panel-title">Postpay GAP Categories</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>Category</th><th class="r">Claims</th><th class="r">%</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>CAT_AUTO_EXL</td><td class="r">584,483</td><td class="r">73%</td></tr>
+                                            <tr><td>Q_OTHER</td><td class="r">169,068</td><td class="r">21%</td></tr>
+                                            <tr><td>CAT_AUTO_SEL</td><td class="r">20,356</td><td class="r">3%</td></tr>
+                                            <tr><td>CAT_CVA_SEL</td><td class="r">14,016</td><td class="r">2%</td></tr>
+                                            <tr><td>CAT_MANUAL_SEL</td><td class="r">8,888</td><td class="r">1%</td></tr>
+                                        </tbody>
+                                        <tfoot><tr><td>Grand Total</td><td class="r">796,811</td><td class="r">100%</td></tr></tfoot>
+                                    </table>
+                                </div>
+                                <div class="cva-panel" style="margin-top:10px">
+                                    <div class="cva-panel-title">CVA Band Distribution (DRG Coded)</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>Band</th><th class="r">Green</th><th class="r">Amber</th><th class="r">Grey</th><th class="r">Red</th><th class="r">Total</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>Green</td><td class="r">425</td><td class="r">1,110</td><td class="r">8,533</td><td class="r">11,992</td><td class="r">22,060</td></tr>
+                                            <tr><td>Amber</td><td class="r">1,996</td><td class="r">10,419</td><td class="r">76,204</td><td class="r">122,652</td><td class="r">211,271</td></tr>
+                                            <tr><td>Grey</td><td class="r">705</td><td class="r">6,806</td><td class="r">53,232</td><td class="r">130,258</td><td class="r">191,001</td></tr>
+                                            <tr><td>Red</td><td class="r">1,159</td><td class="r">7,921</td><td class="r">40,590</td><td class="r">91,144</td><td class="r">140,814</td></tr>
+                                            <tr><td><strong>Total</strong></td><td class="r">4,285</td><td class="r">26,256</td><td class="r">178,559</td><td class="r">356,046</td><td class="r">565,146</td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p class="cva-note" style="margin-top:4px">315,224 coded (56%) &nbsp;|&nbsp; ncod_band total: 762,439 (28%)</p>
+                                </div>
+                                <div class="cva-panel" style="margin-top:10px">
+                                    <div class="cva-panel-title">Downcodeable</div>
+                                    <table class="cva-table">
+                                        <thead><tr><th>Low Weight</th><th class="r">No</th><th class="r">Yes</th><th class="r">Total</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>No</td><td class="r">4,137</td><td class="r">217,192</td><td class="r">221,329</td></tr>
+                                            <tr><td>Yes</td><td class="r">8,026</td><td class="r">140,525</td><td class="r">148,551</td></tr>
+                                        </tbody>
+                                        <tfoot><tr><td>Total</td><td class="r">12,163</td><td class="r">357,717</td><td class="r">369,880</td></tr></tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+
+            <!-- ════════════════════════════════════════ -->
+            <!--  CVA Model Initiatives (placeholder)     -->
+            <!-- ════════════════════════════════════════ -->
+            <div id="cva-initiatives" class="content-pane">
+                <div class="content-placeholder">
+                    <p>CVA Model initiatives Summary content will be added here.</p>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ -->
+            <!--  Transformational - NF Reval Batches     -->
+            <!-- ════════════════════════════════════════ -->
+            <div id="trans-nf-reval" class="content-pane">
+                <section class="content-section nf-reval-section">
+                    <!-- Fix 3: section header with small upload icon top-right -->
+                    <div class="section-header nf-section-header-wrap">
+                        <div>
+                            <h2>Transformational – NF Reval Batches</h2>
+                            <p class="section-note" id="nfLoadStatus">No file loaded.</p>
+                        </div>
+                        <div class="nf-upload-icon-wrap" title="Load nf_reval_data.csv">
+                            <button class="nf-upload-icon-btn" title="Load CSV">
+                                📂
+                                <input type="file" id="nfCsvFile" accept=".csv" title="Load nf_reval_data.csv">
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── VIEW 1: Batch-wise Summary ── -->
+                    <div class="nf-view-header">
+                        <span class="view-badge">VIEW 1</span>
+                        <h3>Batch-wise Summary — click a batch row to drill into AUDIT_TYPE breakdown</h3>
+                    </div>
+
+                    <div id="view1Container">
+                        <div class="no-data-msg" id="view1NoData">No data loaded. Please upload nf_reval_data.csv above.</div>
+                        <div class="batch-table-wrap" id="view1TableWrap" style="display:none;">
+                            <table class="batch-summary-table" id="batchSummaryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Batch</th>
+                                        <th style="text-align:right">Initial Sel<br><small>(Count of Claims)</small></th>
+                                        <th style="text-align:right">SME Sel<br><small>(Sum Selected)</small></th>
+                                        <th style="text-align:right">Finding</th>
+                                        <th style="text-align:right">No Finding</th>
+                                        <th style="text-align:right">Savings</th>
+                                        <th style="text-align:right">Hit Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="batchSummaryBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr class="nf-divider">
+
+                    <!-- ── VIEW 2: Batch Comparison ── -->
+                    <div class="nf-view-header">
+                        <span class="view-badge">VIEW 2</span>
+                        <h3>Batch Comparison — select batches to compare Initial Sel, SME Sel &amp; Conversion%</h3>
+                    </div>
+
+                    <div id="view2Container">
+                        <div class="no-data-msg" id="view2NoData">No data loaded. Please upload nf_reval_data.csv above.</div>
+
+                        <div id="view2Controls" style="display:none;">
+                            <div class="compare-filters">
+                                <div class="compare-filter-group">
+                                    <label>Select Batches to Compare (multi-select):</label>
+                                    <div class="batch-checkbox-list" id="batchCheckboxList"></div>
+                                </div>
+                                <div class="compare-filter-group">
+                                    <label>Filter by Sub-Category (multi-select):</label>
+                                    <div class="batch-checkbox-list" id="subCatCheckboxList"></div>
+                                </div>
+                                <button class="compare-btn" onclick="runComparison()">Compare Selected</button>
+                            </div>
+                            <div class="compare-table-wrap">
+                                <div class="no-data-msg" id="compareNoSelection">Tick at least one batch above and click <strong>Compare Selected</strong>.</div>
+                                <table class="compare-table" id="compareTable" style="display:none;">
+                                    <thead id="compareTableHead"></thead>
+                                    <tbody id="compareTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+
+            <!-- ════════════════════════════════════════ -->
+            <!--  Transformational - Provider Exclusivity -->
+            <!-- ════════════════════════════════════════ -->
+            <div id="trans-provider" class="content-pane">
+                <div class="content-placeholder">
+                    <p>Transformational - Provider Exclusivity content will be added here.</p>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+
+    <script>
+    function selectCvaTab(btn, paneId) {
+        document.querySelectorAll('.cva-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.cva-seg-pane').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const pane = document.getElementById(paneId);
+        if (pane) pane.classList.add('active');
+    }
+    </script>
+
+    <script>
+    /* ═══════════════════════════════════════════════
+       Core navigation & panel functions (from script.js)
+    ═══════════════════════════════════════════════ */
+
+    // Sidebar menu item selection
+    function selectMenuItem(el, paneId) {
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        el.classList.add('active');
+
+        document.querySelectorAll('.content-pane').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById(paneId);
+        if (target) target.classList.add('active');
+
+        // Update row-2 subtitle with selected section name
+        const label = el.querySelector('.menu-label');
+        const subtitleEl = document.getElementById('sectionSubtitleText');
+        if (label && subtitleEl) subtitleEl.textContent = label.textContent.trim();
+    }
+
+    // Sidebar toggle (hamburger)
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const sidebar   = document.getElementById('sidebar');
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', function () {
+                sidebar.classList.toggle('open');
+                document.querySelector('.page-container').classList.toggle('sidebar-open');
+            });
+        }
+    });
+
+    // Collapse / expand pre-post detail panels inside category cards
+    function togglePanel(btn) {
+        const card = btn.closest('.category-card');
+        const body = card.querySelector('.collapse-body');
+        if (!body) return;
+        const isOpen = body.classList.contains('expanded');
+        if (isOpen) {
+            body.classList.remove('expanded');
+            body.style.display = 'none';
+            btn.textContent = 'Show pre/post details';
+        } else {
+            body.classList.add('expanded');
+            body.style.display = '';
+            btn.textContent = 'Hide pre/post details';
+        }
+    }
+
+    // Initialise: hide all collapse bodies on load
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.collapse-body').forEach(b => { b.style.display = 'none'; });
+    });
+    </script>
+
+    <script>
+    /* ═══════════════════════════════════════════════
+       NF Reval – CSV parsing & view logic
+    ═══════════════════════════════════════════════ */
+
+    let nfData = [];       // parsed rows
+    let batchStats = {};   // { batchName: { initialSel, smeSel, finding, nofinding, savings, auditTypes:{} } }
+
+    /* ── CSV Parser ── */
+    function parseCSV(text) {
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length < 2) return [];
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        return lines.slice(1).map(line => {
+            const vals = splitCSVLine(line);
+            const row = {};
+            headers.forEach((h, i) => { row[h] = (vals[i] || '').trim().replace(/^"|"$/g, ''); });
+            return row;
+        });
+    }
+
+    function splitCSVLine(line) {
+        const result = [];
+        let cur = '', inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') { inQuotes = !inQuotes; }
+            else if (ch === ',' && !inQuotes) { result.push(cur); cur = ''; }
+            else { cur += ch; }
+        }
+        result.push(cur);
+        return result;
+    }
+
+    /* ── Aggregate stats by Batch (optionally filtered by sub_categories) ── */
+    function aggregateBatches(rows, subCatFilter) {
+        const stats = {};
+        rows.forEach(r => {
+            // sub_category filter
+            if (subCatFilter && subCatFilter.length > 0) {
+                if (!subCatFilter.includes(r['sub_category'] || '')) return;
+            }
+            const batch = r['Batch'] || '(blank)';
+            if (!stats[batch]) {
+                stats[batch] = { initialSel: 0, smeSel: 0, finding: 0, nofinding: 0, savings: 0, auditTypes: {} };
+            }
+            const s = stats[batch];
+            s.initialSel += 1;
+            s.smeSel     += parseFloat(r['selected'] || 0);
+            s.finding    += parseFloat(r['finding']  || 0);
+            s.nofinding  += parseFloat(r['nofinding']|| 0);
+            s.savings    += parseFloat(r['Savings']  || 0);
+
+            const at = r['AUDIT_TYPE'] || '(blank)';
+            if (!s.auditTypes[at]) {
+                s.auditTypes[at] = { initialSel: 0, smeSel: 0, finding: 0, nofinding: 0, savings: 0 };
+            }
+            const at_s = s.auditTypes[at];
+            at_s.initialSel += 1;
+            at_s.smeSel     += parseFloat(r['selected'] || 0);
+            at_s.finding    += parseFloat(r['finding']  || 0);
+            at_s.nofinding  += parseFloat(r['nofinding']|| 0);
+            at_s.savings    += parseFloat(r['Savings']  || 0);
+        });
+        return stats;
+    }
+
+    function hitRate(finding, nofinding) {
+        const total = finding + nofinding;
+        if (total === 0) return '—';
+        return (finding / total * 100).toFixed(1) + '%';
+    }
+
+    function fmtNum(n) { return n.toLocaleString('en-US'); }
+    function fmtMoney(n) {
+        if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+        if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+        return '$' + n.toFixed(0);
+    }
+
+    /* ── Render VIEW 1 ── */
+    function renderView1() {
+        const body = document.getElementById('batchSummaryBody');
+        body.innerHTML = '';
+
+        const batches = Object.keys(batchStats).sort();
+        batches.forEach((batch, idx) => {
+            const s = batchStats[batch];
+            const hr = hitRate(s.finding, s.nofinding);
+
+            // Main batch row
+            const tr = document.createElement('tr');
+            tr.dataset.batchIdx = idx;
+            tr.innerHTML = `
+                <td>
+                    <div class="batch-name-cell">
+                        <span class="expand-icon">▶</span>
+                        <strong>${batch}</strong>
+                    </div>
+                </td>
+                <td style="text-align:right">${fmtNum(s.initialSel)}</td>
+                <td style="text-align:right">${fmtNum(s.smeSel)}</td>
+                <td style="text-align:right">${fmtNum(s.finding)}</td>
+                <td style="text-align:right">${fmtNum(s.nofinding)}</td>
+                <td style="text-align:right" class="savings-positive">${fmtMoney(s.savings)}</td>
+                <td style="text-align:right" class="hitrate-cell">${hr}</td>
+            `;
+            tr.onclick = () => toggleAuditDrill(tr, drillRow, s);
+            body.appendChild(tr);
+
+            // Drill-down row (hidden by default)
+            const drillRow = document.createElement('tr');
+            drillRow.className = 'audit-drill-row';
+            const drillCell = document.createElement('td');
+            drillCell.className = 'audit-drill-cell';
+            drillCell.colSpan = 7;
+            drillRow.appendChild(drillCell);
+            body.appendChild(drillRow);
+        });
+
+        document.getElementById('view1NoData').style.display = 'none';
+        document.getElementById('view1TableWrap').style.display = '';
+    }
+
+    function toggleAuditDrill(batchRow, drillRow, s) {
+        const isOpen = drillRow.classList.contains('show');
+        // close all first
+        document.querySelectorAll('.audit-drill-row.show').forEach(r => r.classList.remove('show'));
+        document.querySelectorAll('.batch-summary-table tbody tr.active-batch').forEach(r => r.classList.remove('active-batch'));
+
+        if (!isOpen) {
+            drillRow.classList.add('show');
+            batchRow.classList.add('active-batch');
+            // Build AUDIT_TYPE table inside
+            const cell = drillRow.querySelector('.audit-drill-cell');
+            const atypes = Object.keys(s.auditTypes).sort();
+            let rows = atypes.map(at => {
+                const a = s.auditTypes[at];
+                const ahr = hitRate(a.finding, a.nofinding);
+                return `<tr>
+                    <td>${at}</td>
+                    <td style="text-align:right">${fmtNum(a.initialSel)}</td>
+                    <td style="text-align:right">${fmtNum(a.smeSel)}</td>
+                    <td style="text-align:right">${fmtNum(a.finding)}</td>
+                    <td style="text-align:right">${fmtNum(a.nofinding)}</td>
+                    <td style="text-align:right" class="savings-positive">${fmtMoney(a.savings)}</td>
+                    <td style="text-align:right" class="hitrate-cell">${ahr}</td>
+                </tr>`;
+            }).join('');
+            cell.innerHTML = `
+                <div class="audit-drill-inner">
+                    <strong style="font-size:0.82rem;color:#1a3260;">AUDIT_TYPE Breakdown</strong>
+                    <table>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+        }
+    }
+
+    /* ── Render VIEW 2 checkboxes ── */
+    function renderView2Controls() {
+        // Batch checkboxes
+        const list = document.getElementById('batchCheckboxList');
+        list.innerHTML = '';
+        const batches = Object.keys(batchStats).sort();
+        batches.forEach(batch => {
+            const lbl = document.createElement('label');
+            lbl.innerHTML = `<input type="checkbox" value="${batch}" class="batch-compare-cb"> ${batch}`;
+            list.appendChild(lbl);
+        });
+
+        // Sub-category checkboxes (unique values from data)
+        const scList = document.getElementById('subCatCheckboxList');
+        scList.innerHTML = '';
+        const subCats = [...new Set(nfData.map(r => r['sub_category'] || '').filter(Boolean))].sort();
+        if (subCats.length === 0) {
+            scList.innerHTML = '<span style="font-size:0.8rem;color:#999;">No sub_category values found</span>';
+        } else {
+            subCats.forEach(sc => {
+                const lbl = document.createElement('label');
+                lbl.innerHTML = `<input type="checkbox" value="${sc}" class="subcat-compare-cb"> ${sc}`;
+                scList.appendChild(lbl);
+            });
+        }
+
+        document.getElementById('view2NoData').style.display = 'none';
+        document.getElementById('view2Controls').style.display = '';
+    }
+
+    /* ── Run comparison ── */
+    function runComparison() {
+        const selectedBatches = [...document.querySelectorAll('.batch-compare-cb:checked')].map(cb => cb.value);
+        const selectedSubCats = [...document.querySelectorAll('.subcat-compare-cb:checked')].map(cb => cb.value);
+        const noSelMsg = document.getElementById('compareNoSelection');
+        const table    = document.getElementById('compareTable');
+
+        if (selectedBatches.length === 0) {
+            noSelMsg.style.display = '';
+            table.style.display = 'none';
+            return;
+        }
+        noSelMsg.style.display = 'none';
+        table.style.display = '';
+
+        // Re-aggregate with sub_category filter if any selected
+        const filteredStats = aggregateBatches(nfData, selectedSubCats.length > 0 ? selectedSubCats : null);
+
+        // Header
+        const thead = document.getElementById('compareTableHead');
+        thead.innerHTML = `<tr>
+            <th>Metric</th>
+            ${selectedBatches.map(b => `<th class="batch-header">${b}</th>`).join('')}
+        </tr>`;
+
+        // Metrics
+        const metrics = [
+            { label: 'Initial Sel (Count of Claims)', key: 'initialSel', fmt: fmtNum, cls: 'num' },
+            { label: 'SME Sel (Sum Selected)',         key: 'smeSel',    fmt: fmtNum, cls: 'num' },
+            { label: 'Finding',                        key: 'finding',   fmt: fmtNum, cls: 'num' },
+            { label: 'No Finding',                     key: 'nofinding', fmt: fmtNum, cls: 'num' },
+            { label: 'Savings',                        key: 'savings',   fmt: fmtMoney, cls: 'num savings-positive' },
+            { label: 'Hit Rate  (Finding / Total)',    key: '__hitrate', fmt: null,   cls: 'pct' },
+            { label: 'Conversion%  (SME Sel / Initial Sel)', key: '__conv', fmt: null, cls: 'pct' },
+        ];
+
+        const tbody = document.getElementById('compareTableBody');
+        tbody.innerHTML = metrics.map(m => {
+            const cells = selectedBatches.map(b => {
+                const s = filteredStats[b] || { initialSel:0, smeSel:0, finding:0, nofinding:0, savings:0 };
+                let val;
+                if (m.key === '__hitrate') {
+                    val = hitRate(s.finding, s.nofinding);
+                } else if (m.key === '__conv') {
+                    val = s.initialSel > 0 ? (s.smeSel / s.initialSel * 100).toFixed(1) + '%' : '—';
+                } else {
+                    val = m.fmt(s[m.key]);
+                }
+                return `<td class="${m.cls}">${val}</td>`;
+            }).join('');
+            return `<tr><td class="metric-label">${m.label}</td>${cells}</tr>`;
+        }).join('');
+    }
+
+    /* ── File input listener ── */
+    document.getElementById('nfCsvFile').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            nfData = parseCSV(e.target.result);
+            if (nfData.length === 0) {
+                alert('CSV appears empty or could not be parsed. Please check the file.');
+                return;
+            }
+            batchStats = aggregateBatches(nfData, null);
+            // Update status note with filename + row count
+            const statusEl = document.getElementById('nfLoadStatus');
+            if (statusEl) statusEl.textContent = `Loaded: ${file.name} (${nfData.length.toLocaleString()} rows)`;
+            renderView1();
+            renderView2Controls();
+            document.getElementById('compareNoSelection').style.display = '';
+            document.getElementById('compareTable').style.display = 'none';
+        };
+        reader.readAsText(file);
+    });
+
+    </script>
+</body>
+</html>
